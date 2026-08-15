@@ -18,7 +18,7 @@ npx @graysilver/oh-my-dsh
 
 ## macOS Desktop
 
-Desktop 版本会在 Electron 窗口内承载同一套 WebUI，并统一管理本地运行时进程。关闭窗口只会把应用隐藏到菜单栏；从 Tray 菜单选择退出才会停止运行时。开发时运行 `pnpm oh-my-dsh:desktop`，使用 `pnpm oh-my-dsh:desktop:package` 构建名为 `OhMyDSH`、支持 arm64 和 x64 的 Universal `.app` 与 `.dmg`。图标采用 DeepSeek 官方站点提供的鲸鱼标志（`https://www.deepseek.com/favicon.ico`）。打包产物会把完整插件依赖闭包放在物理 `Resources/app` 目录树中，并在命令成功前启动完整的 Web profile，产物写入 `apps/oh-my-dsh-desktop/release/`。
+Desktop 版本会在 Electron 窗口内承载同一套 WebUI，并统一管理本地运行时进程。关闭窗口只会把应用隐藏到菜单栏；从 Tray 菜单选择退出才会停止运行时。开发时运行 `pnpm oh-my-dsh:desktop`，使用 `pnpm oh-my-dsh:desktop:package` 构建名为 `OhMyDSH`、支持 arm64 和 x64 的 Universal `.app` 与 `.dmg`。图标采用 DeepSeek 官方站点提供的鲸鱼标志（`https://www.deepseek.com/favicon.ico`），并合成在不透明的纯白画布上。打包产物会把完整插件依赖闭包放在物理 `Resources/app` 目录树中，并在命令成功前启动完整的 Web profile，产物写入 `apps/oh-my-dsh-desktop/release/`。
 
 Desktop 始终让本地运行时监听 `0.0.0.0:3080`，因此可信设备可以使用 Tray 中显示的 LAN 地址访问。LAN 客户端与 localhost 使用相同权限，包括设置、凭据、本地文件访问和已批准的命令；只应在可信网络中使用。若 3080 已被其他进程占用，Desktop 会直接报告冲突，不会替换或终止现有进程。
 

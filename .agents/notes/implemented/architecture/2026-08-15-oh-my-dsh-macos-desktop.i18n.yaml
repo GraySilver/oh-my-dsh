@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-15-oh-my-dsh-macos-desktop.md
-2026-08-15-oh-my-dsh-macos-desktop.md: b0ab08ae73976a9f7439081f3af0544bdb540d34
-2026-08-15-oh-my-dsh-macos-desktop.zh.md: 416309e7e8528a209d810339cd6cd62d262376e7
+2026-08-15-oh-my-dsh-macos-desktop.md: 9b170db1c31856ce800d21a2568d09ae10adb485
+2026-08-15-oh-my-dsh-macos-desktop.zh.md: cddd4147168eeec95ced45fa0cf6753a461fae05
