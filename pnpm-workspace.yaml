@@ -24,6 +24,15 @@ packages:
 # builds must resolve those matching names to this workspace's pinned sources.
 linkWorkspacePackages: true
 
+# Universal macOS Desktop packages need both native optional dependency sets
+# available while electron-builder assembles its arm64 and x64 app trees.
+supportedArchitectures:
+  os:
+    - darwin
+  cpu:
+    - arm64
+    - x64
+
 overrides:
   '@deepseek-ai/cosmokit': 'link:vendor/cosmokit'
   '@deepseek-ai/schemastery': 'link:vendor/schemastery'
@@ -39,6 +48,7 @@ peerDependencyRules:
 # (git hooks) genuinely need theirs.
 allowBuilds:
   esbuild: true
+  electron: true
   lefthook: true
   # Cross-platform boundary for the persistent PTY backend, including ConPTY on Windows.
   node-pty: true
@@ -56,6 +66,7 @@ allowBuilds:
   # Oh My DSH consumes the official published DSH runtime. Its subprocess
   # package runs the same reviewed helper-restoration script from the tarball.
   '@deepseek-ai/dsh-subprocess-local': true
+  electron-winstaller: false
 
 minimumReleaseAgeExclude:
   # Fresh pi-ai releases carry the model catalog updates that are the whole

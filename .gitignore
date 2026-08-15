@@ -33,6 +33,9 @@ python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/
 python/**/__pycache__/
 python/**/.pytest_cache/
 apps/web/dist/
+apps/oh-my-dsh-desktop/dist/
+apps/oh-my-dsh-desktop/release/
+apps/oh-my-dsh-desktop/.runtime-peers/
 .artifacts/
 .playwright-mcp/
 .orig
