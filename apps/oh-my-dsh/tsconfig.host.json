@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+  },
+  "files": [
+    "src/bin.ts",
+    "src/cli.ts",
+    "src/deepseek-discovery.ts",
+    "src/doctor.ts",
+    "src/home.ts",
+    "src/index.ts",
+    "src/launch.ts",
+    "src/manifest.ts"
+  ],
+  "references": [
+    { "path": "../../vendor/cordis" },
+    { "path": "../../packages/boot/app-boot" },
+    { "path": "../../packages/client/connection/tsconfig.host.json" },
+    { "path": "../../packages/host/apiproxy" },
+    { "path": "../../packages/host/webserver" },
+    { "path": "../../packages/llm/llm" }
+  ]
+}

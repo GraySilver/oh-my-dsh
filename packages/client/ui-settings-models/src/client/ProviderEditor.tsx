@@ -75,6 +75,8 @@ export interface ProviderEditorProps {
   credentialRequired?: boolean
   /** Give the credential field initial focus when this editor mounts. */
   autoFocusCredential?: boolean
+  /** Probe the unsaved endpoint and credential before any settings or secret write. */
+  testBeforeSave?: boolean
   /** Override the dismiss action copy. */
   cancelLabel?: keyof typeof en
   /** Override the idle commit action copy. */
@@ -290,6 +292,13 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
     setBusy(true)
     setFailure(undefined)
     try {
+      if (props.testBeforeSave === true) {
+        const tested = await api.llm.discoverModels(probe)
+        if (!tested.result.ok) {
+          setFailure(`${t('connectionTestFailed')} ${tested.result.error.message}`)
+          return
+        }
+      }
       const failure = await applyOnce()
       if (failure !== undefined) {
         setFailure(failure)

@@ -1,8 +1,10 @@
-# dsh-client-ui-agent-preset
+# @graysilver/oh-my-dsh-task-modes
 
 [English](README.md) | 中文
 
-agent preset 的各个表层：General 设置中的一行，用于选择新建会话据以组装的 [preset](../../preset/agent-presets/README.md)；新建会话界面上的一枚 chip，用于选择**下一个会话**的 preset；会话标题旁的一个只读标签；以及一个设置页分区，用于管理名单——复制、删除、默认值，以及通往 preset 自身文件的入口。
+Oh My DSH 的任务启动器，以及继承的 agent preset 表层。启动器把三种产品选择映射到 Harness 已有操作：快速执行直接发送提示；先做计划先执行 `/plan`，再发送任务；自主完成执行 `/goal <objective>`。URL 中的 `cwd` 交接值会通过既有 Workspace API 注册目录并启动会话；采用后会从浏览器历史中移除。
+
+同一个包继续保留 General 设置中的一行，用于选择新建会话据以组装的 [preset](../../preset/agent-presets/README.md)；新建会话界面上的 preset chip；会话标题旁的只读标签；以及管理名单的设置分区。
 
 ## 为什么它是"新建会话"的偏好设置
 
@@ -54,7 +56,7 @@ preset 自行发布描述，长度不限，而网格让每一行卡片等高—�
 
 ## 何时不显示这些表层
 
-未组装任何 preset 的部署返回空名单，本行、chip、标签与分区都不渲染任何内容——此时每个会话共用宿主组装，也就无从选择或管理。未配置可写根目录的部署返回 `authorable: false`，分区随之退化为只读浏览：随附组装仍可在查看器中打开，但每个复制操作都被禁用并以原因作提示，而不是给出一个创建必然失败的对话框。
+未组装任何 preset 的部署返回空名单，preset 行、preset chip、标签与管理分区都不渲染。Oh My DSH 任务启动器仍然可用，因为三种模式使用会话与命令通道，不依赖 preset 名单。未配置可写根目录的部署返回 `authorable: false`，管理分区随之退化为只读浏览。
 
 ## 模型体验
 

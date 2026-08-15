@@ -39,6 +39,7 @@ function consumerEnvironment(consumerRoot: string): NodeJS.ProcessEnv {
   delete environment.NODE_PATH
   environment.DSH_HOME = resolve(consumerRoot, '.dsh')
   environment.DSH_AGENTS_HOME = resolve(consumerRoot, '.agents')
+  environment.OH_MY_DSH_HOME = resolve(consumerRoot, '.oh-my-dsh')
   environment.DSH_TELEMETRY_DISABLED = '1'
   return environment
 }
@@ -73,7 +74,7 @@ function main(): void {
     allowPositionals: false,
   })
   if (values.family === undefined || values.from === undefined || values.from.length === 0) {
-    throw new Error('usage: verify-packed-install.ts --family <dsh|vendor> --from <packed directory> [--from ...]')
+    throw new Error('usage: verify-packed-install.ts --family <dsh|oh-my-dsh|vendor> --from <packed directory> [--from ...]')
   }
 
   const family = releaseFamily(values.family)
@@ -99,12 +100,15 @@ function main(): void {
 
     const environment = consumerEnvironment(consumerRoot)
     console.log(`release verify-packed-install: installing ${String(packed.size)} tarball(s) into ${consumerRoot}`)
-    // Optional dependencies are omitted: the Landlock platform packages behind
-    // them need a musl toolchain and one build per architecture, and a consumer
-    // that cannot install them must still start — which is what optional means
-    // here. Their entry package is a plain dependency of dsh-sandbox-local, so
-    // its tarball is supplied through --from.
-    capture('npm', ['install', '--no-audit', '--no-fund', '--package-lock=false', '--omit=optional'],
+    // The source-built dsh family supplies its Landlock entry tarball and omits
+    // optional platform builds. The product family consumes the official npm
+    // engine and must retain optional platform binaries such as Koffi's prebuild;
+    // that is the path an ordinary `npx oh-my-dsh` consumer installs.
+    const installArgs = [
+      'install', '--no-audit', '--no-fund', '--package-lock=false',
+      ...entry.omitOptionalDependencies === true ? ['--omit=optional'] : [],
+    ]
+    capture('npm', installArgs,
       { cwd: consumerRoot, env: environment })
 
     const bin = join(consumerRoot, 'node_modules', ...entry.packageName.split('/'), entry.binPath)
@@ -113,6 +117,10 @@ function main(): void {
       throw new Error(`installed ${entry.packageName} --version reported ${JSON.stringify(version)}, expected ${expected.version}`)
     }
     console.log(`release verify-packed-install: installed ${entry.packageName} reports ${version}`)
+    if (entry.smokeArgs !== undefined) {
+      capture(process.execPath, [bin, ...entry.smokeArgs], { cwd: consumerRoot, env: environment })
+      console.log(`release verify-packed-install: installed ${entry.packageName} passed ${entry.smokeArgs.join(' ')}`)
+    }
   } finally {
     rmSync(consumerRoot, { recursive: true, force: true })
   }

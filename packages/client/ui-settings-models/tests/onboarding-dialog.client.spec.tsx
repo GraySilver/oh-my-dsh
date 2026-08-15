@@ -64,6 +64,8 @@ function harness(options: {
   describeFailure?: string
   settingsWritable?: boolean
   providersReject?: boolean
+  discoverFailure?: string
+  discoverReject?: string
   setFailure?: string
   setReject?: string
 } = {}) {
@@ -82,6 +84,11 @@ function harness(options: {
     fileConfigured = true
     return Promise.resolve(ok({}))
   })
+  const discover = vi.fn((_payload: unknown) => {
+    if (options.discoverReject !== undefined) return Promise.reject(new Error(options.discoverReject))
+    if (options.discoverFailure !== undefined) return Promise.resolve(fail(options.discoverFailure))
+    return Promise.resolve(ok({ models: [{ id: 'deepseek-chat' }] }))
+  })
   const face = {
     llm: {
       providers: () => {
@@ -98,6 +105,7 @@ function harness(options: {
             }],
         }))
       },
+      discoverModels: discover,
     },
     settings: {
       describe: () => Promise.resolve(ok({
@@ -140,7 +148,7 @@ function harness(options: {
     t: key => en[key],
   }
   return {
-    controller, complete, openSection, props, mutate, set,
+    controller, complete, openSection, props, mutate, set, discover,
     configure: () => { fileConfigured = true },
   }
 }
@@ -180,16 +188,41 @@ describe('DeepSeekOnboardingDialog', () => {
     expect(appRoot.inert).toBe(true)
   })
 
-  it('requires a non-blank key before Save and continue is available', async () => {
+  it('requires a non-blank key before the connection test is available', async () => {
     const h = harness()
     render(<DeepSeekOnboardingDialog {...h.props} />)
     await screen.findByRole('dialog')
-    const save = screen.getByRole<HTMLButtonElement>('button', { name: en.onboardingSave })
+    const save = screen.getByRole<HTMLButtonElement>('button', { name: en.onboardingTestSave })
     expect(save.disabled).toBe(true)
     fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: '   ' } })
     expect(save.disabled).toBe(true)
     expect(screen.getByText(en.keyRequired)).toBeTruthy()
     expect(h.set).not.toHaveBeenCalled()
+  })
+
+  it('tests the unsaved key before any credential is persisted', async () => {
+    const h = harness({ discoverFailure: 'invalid API key' })
+    render(<DeepSeekOnboardingDialog {...h.props} />)
+    await screen.findByRole('dialog')
+    fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'sk-not-valid' } })
+    fireEvent.click(screen.getByRole('button', { name: en.onboardingTestSave }))
+
+    expect(await screen.findByText(`${en.connectionTestFailed} invalid API key`)).toBeTruthy()
+    expect(h.discover).toHaveBeenCalledWith(expect.objectContaining({ apiKey: 'sk-not-valid' }))
+    expect(h.set).not.toHaveBeenCalled()
+    expect(h.mutate).not.toHaveBeenCalled()
+    expect(h.complete).not.toHaveBeenCalled()
+  })
+
+  it('persists the key only after a successful connection test', async () => {
+    const h = harness()
+    render(<DeepSeekOnboardingDialog {...h.props} />)
+    await screen.findByRole('dialog')
+    fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'sk-live' } })
+    fireEvent.click(screen.getByRole('button', { name: en.onboardingTestSave }))
+
+    await waitFor(() => { expect(h.set).toHaveBeenCalledWith({ ref: 'DEEPSEEK_API_KEY', value: 'sk-live' }) })
+    expect(h.discover.mock.invocationCallOrder[0]!).toBeLessThan(h.set.mock.invocationCallOrder[0]!)
   })
 
   it('keeps the modal open and reports rejected and failed credential writes', async () => {
@@ -201,10 +234,10 @@ describe('DeepSeekOnboardingDialog', () => {
       const view = render(<DeepSeekOnboardingDialog {...h.props} />)
       await screen.findByRole('dialog')
       fireEvent.change(screen.getByLabelText(en.keyInput), { target: { value: 'sk-live' } })
-      fireEvent.click(screen.getByRole('button', { name: en.onboardingSave }))
+      fireEvent.click(screen.getByRole('button', { name: en.onboardingTestSave }))
       expect(await screen.findByText(message)).toBeTruthy()
       expect(screen.getByRole('dialog')).toBeTruthy()
-      expect(screen.getByRole<HTMLButtonElement>('button', { name: en.onboardingSave }).disabled).toBe(false)
+      expect(screen.getByRole<HTMLButtonElement>('button', { name: en.onboardingTestSave }).disabled).toBe(false)
       expect(h.complete).not.toHaveBeenCalled()
       expect(h.mutate).not.toHaveBeenCalled()
       view.unmount()

@@ -1,6 +1,15 @@
 /* Agent-preset chip on the new-session screen, beside the workspace picker.
    Geometry mirrors HeroShell's .workspace so the two read as one row. */
 
+.productBar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+}
+
 .seat {
   display: inline-flex;
   align-items: center;

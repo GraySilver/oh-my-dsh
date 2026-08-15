@@ -55,19 +55,28 @@ function renderRow(state: Partial<AgentPresetSettingsState> = {}) {
   return actions
 }
 
-function renderSeat(state: Partial<AgentPresetSeatState> = {}) {
+function renderSeat(state: Partial<AgentPresetSeatState> = {}, launchCwd?: string) {
   const store = createSnapshotStore<AgentPresetSeatState>({ ...SEAT_READY, ...state })
   const actions = {
     load: vi.fn(() => Promise.resolve()),
     select: vi.fn(() => Promise.resolve()),
     introduced: vi.fn(),
+    startTask: vi.fn(() => Promise.resolve()),
+    useLaunchWorkspace: vi.fn(() => Promise.resolve()),
   }
   render(<AgentPresetSeat {...({
     ...actions,
     useAgentPresetSeat: bindSnapshotSelector(store),
     t: (key: keyof typeof en) => en[key],
+    ...launchCwd === undefined ? {} : { launchCwd },
   } as unknown as AgentPresetSeatProps)} />)
   return actions
+}
+
+function presetTrigger(): HTMLButtonElement {
+  const trigger = document.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')
+  if (trigger === null) throw new Error('preset trigger not found')
+  return trigger
 }
 
 function renderLabel(
@@ -205,14 +214,14 @@ describe('the new-session chip', () => {
     const actions = renderSeat()
 
     await waitFor(() => { expect(actions.load).toHaveBeenCalledTimes(1) })
-    expect(screen.getByRole('button').textContent).toContain(en.presetStandardName)
-    expect(screen.getByRole('button').getAttribute('title')).toBe(en.seatHint)
+    expect(presetTrigger().textContent).toContain(en.presetStandardName)
+    expect(presetTrigger().getAttribute('title')).toBe(en.seatHint)
   })
 
   it('offers each preset with what it is for', () => {
     renderSeat()
 
-    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(presetTrigger())
 
     // The id alone never said what a preset does; the description is the
     // whole reason a preset can publish metadata at all.
@@ -226,54 +235,80 @@ describe('the new-session chip', () => {
   it('falls back to the id when the staged preset published no name', () => {
     renderSeat({ current: 'mine' })
 
-    expect(screen.getByRole('button').textContent).toContain('mine')
+    expect(presetTrigger().textContent).toContain('mine')
   })
 
   it('shows the staged id until a stale roster contains it', () => {
     renderSeat({ current: 'arriving' })
 
-    expect(screen.getByRole('button').textContent).toContain('arriving')
+    expect(presetTrigger().textContent).toContain('arriving')
   })
 
   it('stages the picked preset and closes the menu', () => {
     const actions = renderSeat()
-    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(presetTrigger())
 
     fireEvent.click(screen.getByText('mine'))
 
     expect(actions.select).toHaveBeenCalledWith('mine')
-    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false')
+    expect(presetTrigger().getAttribute('aria-expanded')).toBe('false')
   })
 
   it('disables the trigger while a switch is in flight', () => {
     renderSeat({ busy: true })
 
-    expect(screen.getByRole('button')).toHaveProperty('disabled', true)
+    expect(presetTrigger()).toHaveProperty('disabled', true)
   })
 
   it('shows a refused switch on the trigger', () => {
     renderSeat({ error: 'session has already started' })
 
-    expect(screen.getByRole('button').getAttribute('title')).toBe('session has already started')
+    expect(presetTrigger().getAttribute('title')).toBe('session has already started')
   })
 
-  it('renders nothing before the roster arrives or when there is none', () => {
+  it('keeps the product task launcher when the optional preset roster is absent', () => {
     const empty = renderSeat({ options: [] })
     expect(empty).toBeTruthy()
-    expect(screen.queryByRole('button')).toBeNull()
+    expect(document.querySelector('button[aria-haspopup="menu"]')).toBeNull()
+    expect(screen.getByRole('button', { name: new RegExp(en.startTask) })).toBeTruthy()
     cleanup()
 
     renderSeat({ current: '' })
-    expect(screen.queryByRole('button')).toBeNull()
+    expect(document.querySelector('button[aria-haspopup="menu"]')).toBeNull()
+    expect(screen.getByRole('button', { name: new RegExp(en.startTask) })).toBeTruthy()
   })
 
   it('closes on an outside dismissal', () => {
     renderSeat()
-    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(presetTrigger())
 
     fireEvent.keyDown(document, { key: 'Escape' })
 
-    expect(screen.getByRole('button').getAttribute('aria-expanded')).toBe('false')
+    expect(presetTrigger().getAttribute('aria-expanded')).toBe('false')
+  })
+})
+
+describe('the Oh My DSH task launcher', () => {
+  it('starts a plan-first task through the injected product action', async () => {
+    const actions = renderSeat()
+
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.startTask) }))
+    fireEvent.click(screen.getByRole('radio', { name: new RegExp(en.modePlan) }))
+    fireEvent.change(screen.getByLabelText(en.taskLabel), { target: { value: 'Refactor the parser' } })
+    fireEvent.click(screen.getByRole('button', { name: en.start }))
+
+    await waitFor(() => {
+      expect(actions.startTask).toHaveBeenCalledWith('plan', 'Refactor the parser')
+    })
+  })
+
+  it('adopts the directory handed over by the launcher', async () => {
+    const actions = renderSeat({}, '/work/project')
+
+    fireEvent.click(screen.getByRole('button', { name: en.useCurrentDirectory }))
+
+    await waitFor(() => { expect(actions.useLaunchWorkspace).toHaveBeenCalledTimes(1) })
+    expect(screen.queryByRole('button', { name: en.useCurrentDirectory })).toBeNull()
   })
 })
 
@@ -285,7 +320,7 @@ describe('the chip introduce cue', () => {
 
   /** Character spans carry inline animation delays; nothing else does. */
   function delayedChars(): HTMLElement[] {
-    return Array.from(screen.getByRole('button').querySelectorAll<HTMLElement>('[style]'))
+    return Array.from(presetTrigger().querySelectorAll<HTMLElement>('[style]'))
   }
 
   it('reveals a long Latin name inside the shared window, then acknowledges', () => {

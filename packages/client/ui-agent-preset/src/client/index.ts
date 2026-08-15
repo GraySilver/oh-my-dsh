@@ -33,10 +33,12 @@ import type { SeatSessionSummary } from './seat-store.ts'
 import { AgentPresetSectionController } from './section-store.ts'
 import { en, zh } from './locales.ts'
 import { AGENT_PRESET_SETTINGS_NS, AgentPresetSettingsController } from './settings-store.ts'
+import type { TaskMode } from './TaskModeLauncher.tsx'
 
 export type { AgentPresetLabelInjected, AgentPresetLabelProps } from './AgentPresetLabel.tsx'
 export type { AgentPresetRowInjected, AgentPresetRowProps } from './AgentPresetRow.tsx'
 export type { AgentPresetSeatInjected, AgentPresetSeatProps } from './AgentPresetSeat.tsx'
+export type { TaskMode } from './TaskModeLauncher.tsx'
 export type { AgentPresetSectionInjected, AgentPresetSectionProps } from './AgentPresetSection.tsx'
 export type { AgentPresetSeatState, SeatSessionSummary } from './seat-store.ts'
 export {
@@ -47,6 +49,28 @@ export { AGENT_PRESET_SETTINGS_NS, writeDefaultPreset } from './settings-store.t
 
 /** Required services (cordis fiber inject). */
 export const inject = ['slots', 'locale', 'connection', 'remote']
+
+/**
+ * Read the product launcher's current-directory handoff from a browser URL.
+ * @param href - absolute browser URL carrying the optional cwd query value.
+ * @returns the trimmed directory, or undefined when the handoff is absent or blank.
+ */
+export function launchDirectoryFromUrl(href: string): string | undefined {
+  const value = new URL(href).searchParams.get('cwd')?.trim()
+  return value === undefined || value === '' ? undefined : value
+}
+
+/** Remove the one-shot directory handoff without navigating or adding history. */
+function clearLaunchDirectory(): void {
+  if (typeof window === 'undefined') return
+  const url = new URL(window.location.href)
+  url.searchParams.delete('cwd')
+  window.history.replaceState(window.history.state, '', url.href)
+}
+
+function currentLaunchDirectory(): string | undefined {
+  return typeof window === 'undefined' ? undefined : launchDirectoryFromUrl(window.location.href)
+}
 
 /**
  * Mount the General-settings row.
@@ -62,6 +86,13 @@ export function apply(ctx: ClientContext): void {
     void controller.load()
     for (const read of rosterReaders) read()
   })
+
+  ctx.effect(() => {
+    if (typeof document === 'undefined') return () => {}
+    const previous = document.title
+    document.title = 'Oh My DSH'
+    return () => { document.title = previous }
+  }, 'oh-my-dsh: product document title')
 
   ctx.effect(() => ctx.locale.register('settings.agentPreset', { zh, en }), 'ui-agent-preset: settings row dictionaries')
 
@@ -115,12 +146,39 @@ export function apply(ctx: ClientContext): void {
       scope.sessions.noteAgentPreset(sessionId as never, agentPreset)
     })
 
-    const seatInjected = (): AgentPresetSeatInjected => ({
-      hooks: { agentPresetSeat: seat.store },
-      load: () => seat.load(),
-      select: (id: string) => seat.select(id),
-      introduced: () => { seat.introduced() },
-    })
+    const seatInjected = (): AgentPresetSeatInjected => {
+      const launchCwd = currentLaunchDirectory()
+      return {
+        hooks: { agentPresetSeat: seat.store },
+        load: () => seat.load(),
+        select: (id: string) => seat.select(id),
+        introduced: () => { seat.introduced() },
+        startTask: async (mode: TaskMode, task: string) => {
+          const sessionId = scope.sessions.list.getSnapshot().current
+          if (sessionId === undefined) throw new Error('Start or select a workspace before starting a task.')
+          const agent = scope.sessions.scope(sessionId)
+          if (agent === undefined) throw new Error('The selected session is not ready yet.')
+          if (mode === 'quick') {
+            await agent.conversation.send(task)
+            return
+          }
+          const line = mode === 'plan' ? '/plan' : `/goal ${task}`
+          const response = await scope.remote.commands.execute(sessionId, line)
+          if (!response.ok) throw new Error(`${response.error.message} (${response.error.code})`)
+          if (response.value === undefined) throw new Error(`The ${line.split(' ')[0]} command is unavailable.`)
+          if (response.value.result.kind === 'error') throw new Error(response.value.result.text)
+          if (mode === 'plan') await agent.conversation.send(task)
+        },
+        ...launchCwd === undefined ? {} : { launchCwd },
+        useLaunchWorkspace: async () => {
+          const cwd = currentLaunchDirectory()
+          if (cwd === undefined) return
+          const workspace = await scope.workspaces.create({ path: cwd })
+          clearLaunchDirectory()
+          scope.workspaces.startSession(workspace.workspaceId)
+        },
+      }
+    }
 
     const labelInjected = (): AgentPresetLabelInjected => ({
       hooks: { agentPresets: controller.store },

@@ -9,7 +9,8 @@
 // inserts dsh-llm-replay in providers mode), record (real adapter + key,
 // harvests fixtures from live session memory), refresh (keyless replay that
 // rewrites goldens). A first-run option keeps the real adapter mounted while
-// masking its credential, without making a model call.
+// masking its credential. The product connection probe is registered in-process
+// for that lane so an unsaved key crosses the real API without external traffic.
 //
 // Composition divergences from `dsh web`, all deliberate, all via include
 // patches after the shipped bundle layers, over the SAME tree (never a
@@ -70,15 +71,15 @@ import { REPO_ROOT, requireDist } from './support.ts'
 // import {
 //   WELCOME_NOTICE_ACK_FIELD, WELCOME_NOTICE_SETTINGS_NAMESPACE,
 //   WELCOME_NOTICE_VERSION, WELCOME_NOTICE_COPY,
-// } from '@deepseek-ai/dsh-client-ui-settings-models'
+// } from '@graysilver/oh-my-dsh-models'
 export const WELCOME_NOTICE_SETTINGS_NAMESPACE = 'ui-onboarding'
 export const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
-export const WELCOME_NOTICE_VERSION = '2026-08-13.1'
+export const WELCOME_NOTICE_VERSION = '2026-08-15.1'
 export const WELCOME_NOTICE_COPY = {
   zh: {
-    title: '内测声明',
-    body: 'DeepSeek Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 DeepSeek Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。\n\n我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 DSH 插件生态。',
-    continueLabel: '继续',
+    title: '欢迎使用 Oh My DSH',
+    body: '这是一个开箱即用的本地 Web 工作台，由 DeepSeek Harness 驱动。项目文件、会话与凭据保存在你的电脑上；遥测默认关闭。\n\n接下来只需连接 DeepSeek，然后从快速执行、先做计划或自主完成三种模式中选择一种开始任务。Agent 在读写文件或执行命令时，仍会遵循 Harness 的权限与确认机制。',
+    continueLabel: '开始设置',
   },
 } as const
 
@@ -536,6 +537,18 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       await ctx.settings.mutate(settingsNamespace(WELCOME_NOTICE_SETTINGS_NAMESPACE), [{
         op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION,
       }])
+    }
+    if (mode !== 'record' && options.deepSeekMissingCredential === true) {
+      ctx.llm.registerModelDiscovery('llm-deepseek', (request) => {
+        if (request.apiKey === undefined || request.apiKey.length === 0) {
+          throw new Error('web e2e scaffold: the product DeepSeek probe needs the unsaved key')
+        }
+        return Promise.resolve(REPLAY_PROVIDERS[0]!.models.map(model => ({
+          id: model.id,
+          name: model.name,
+          contextWindow: model.contextWindow,
+        })))
+      })
     }
     const boundPort = ctx.get('webServer')?.port
     if (boundPort === undefined) {

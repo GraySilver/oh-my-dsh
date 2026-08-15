@@ -1,74 +1,96 @@
-# DeepSeek Harness
+# Oh My DSH
 
 [English](README.md) | 中文
 
-DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。
+Oh My DSH 是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 构建的开箱即用、本地运行、只提供 Web 界面的产品。它继续使用上游的 Agent 运行时与插件生态，在此基础上增加明确的本地启动入口、首次设置、任务模式和独立发布链路。
 
-它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
+这是一个完全独立的 fork，与 JarvisBot 无关，也不共享运行时、配置或发布流程。
 
-## 开发者预览
+## 开始使用
 
-DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
-
-## 运行
-
-### 通过 `npm` 运行
-
-安装 `Node.js`，然后运行：
+需要 Node.js 22.19+ 或 24+。
 
 ```sh
-npx @deepseek-ai/dsh web
+npx @graysilver/oh-my-dsh
 ```
 
-该命令会启动 Web UI，默认地址为 `http://127.0.0.1:3080`。详见 [Web UI 指南](docs/user/guide/index.md)。
+命令会启动本地 Web 应用、打开浏览器，并把执行命令时所在的目录交给工作区页面。产品数据默认存放在 `~/.oh-my-dsh`；如需更换位置，可以设置 `OH_MY_DSH_HOME`。
 
-### 从源码运行
+首次运行只有两个简短步骤：
 
-如需从仓库源码运行：
+1. 确认本地数据与权限边界。
+2. 填入 DeepSeek API 密钥。系统会先调用模型发现接口测试密钥，通过后才写入本地凭据文件。
+
+产品组装和启动环境都会关闭遥测。Agent 读写文件或执行命令时，仍然遵循 DeepSeek Harness 提供的权限与确认机制。
+
+如需让同一局域网内的设备访问 WebUI，必须显式启用：
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
+npx @graysilver/oh-my-dsh --host 0.0.0.0
+```
+
+该模式会让所有能够访问该端口的设备获得与 localhost 相同的 Oh My DSH 权限，包括提供方设置、凭据、模型发现、本机文件访问和已批准的命令执行。此模式没有登录隔离，请只在可信网络中使用，并在远程会话结束后停止进程；默认仍然只监听回环地址。
+
+## 三种任务模式
+
+- **快速执行**：把任务直接发送到当前会话。
+- **先做计划**：先进入上游 `/plan` 模式，再发送任务，让方案在实施前保持可审阅。
+- **自主完成**：创建上游的持久 `/goal`，由 Goal Driver 跨多轮持续推进，直到完成或遇到真实阻塞。
+
+这三种模式只是对上游能力的产品化入口，不是三套独立 Agent 引擎。会话、工具、权限、目标、计划以及后续兼容的新特性，仍然来自 DeepSeek Harness。
+
+## 对外命令
+
+```text
+oh-my-dsh
+oh-my-dsh --host 0.0.0.0
+oh-my-dsh doctor [--json] [--model]
+oh-my-dsh --help
+oh-my-dsh --version
+```
+
+产品刻意不公开 profile、headless、插件管理或 Harness 原始命令。仓库内部仍保留非 Web 的上游源码，只用于持续合并和验证上游变更，不属于 Oh My DSH 的产品界面。
+
+`doctor` 会检查 Node 版本、产品与上游版本锁、产品 Patch、数据目录和工作区权限、3080 端口以及凭据是否存在。`--model` 还会真实测试模型发现链路；`--json` 输出带版本号的稳定结构，而且绝不会包含凭据值。
+
+## 上游同步与发布
+
+仓库保留两个 remote：
+
+```text
+origin    git@github.com:GraySilver/oh-my-dsh.git
+upstream  https://github.com/deepseek-ai/deepseek-harness.git
+```
+
+定时工作流会把 `upstream/master` 合并到一条可审阅的 Draft PR，记录准确的上游提交，并让包装器对齐最新的官方 `@deepseek-ai/dsh` npm 版本；同步流程绝不发布。产品发布使用独立的 `oh-my-dsh-v*` 标签族，构建三个 `@graysilver` tarball，在全新消费者目录里安装验证，最后经过受保护 npm 环境审批后发布完全相同的产物。
+
+这项拆分很重要：上游提交可能早于对应的官方 npm 包。源码合并负责证明兼容性；精确固定的 npm 版本则说明用户实际运行的是哪一版引擎。
+
+## 从源码开发
+
+```sh
+git clone git@github.com:GraySilver/oh-my-dsh.git
+cd oh-my-dsh
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm oh-my-dsh
 ```
 
-## 社区与支持
+产品层的重点验证命令：
 
-- 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。
-- 为你的插件仓库添加 [`dsh-plugin`](https://github.com/topics/dsh-plugin) 话题，便于被发现。
-- 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
+```sh
+pnpm run typecheck
+pnpm run lint
+pnpm exec vitest run apps/oh-my-dsh/tests \
+  packages/client/ui-agent-preset/tests \
+  packages/client/ui-settings-models/tests
+pnpm run release:pack --family oh-my-dsh --out dist/npm-oh-my-dsh
+pnpm run release:verify-packed-install --family oh-my-dsh \
+  --from dist/npm-oh-my-dsh
+```
 
-<table>
-  <thead>
-    <tr>
-      <th align="center">企微小助手</th>
-      <th align="center">入群问卷</th>
-      <th align="center">微信公众号</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td align="center"><img src="assets/community-wecom-assistant.png" alt="DeepSeek Harness 企微小助手二维码" width="180" height="180"></td>
-      <td align="center"><a href="https://trtgsjkv6r.feishu.cn/share/base/form/shrcnIt5twSVdLGD52KJBckGCgg"><img src="assets/community-wecom-survey.png" alt="DeepSeek Harness 入群问卷二维码" width="180" height="180"></a></td>
-      <td align="center"><img src="assets/community-wechat-official-account.png" alt="DeepSeek Harness 团队微信公众号二维码" width="180" height="180"></td>
-    </tr>
-  </tbody>
-</table>
+继承的架构和贡献约束仍记录在 [AGENTS.md](AGENTS.md)、[开发指南](docs/development.md)与[架构指南](docs/architecture.md)中。
 
-## 参与贡献
+## 许可证与上游归属
 
-参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 开发
-
-请先阅读[开发指南](docs/development.md)与[架构文档](docs/architecture.md)。
-
-面向 agent：请遵循 [AGENTS.md](AGENTS.md)。
-
-## 许可证
-
-[MIT](LICENSE)
-
-第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+[MIT](LICENSE)。DeepSeek Harness 由 DeepSeek AI 开发，并继续作为本项目的上游运行时。第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

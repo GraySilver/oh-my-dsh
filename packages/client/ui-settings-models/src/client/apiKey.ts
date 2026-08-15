@@ -1,6 +1,6 @@
 /**
  * Browser-side judgement of a typed API key.
- * @module @deepseek-ai/dsh-client-ui-settings-models/apiKey
+ * @module @graysilver/oh-my-dsh-models/apiKey
  */
 
 /**

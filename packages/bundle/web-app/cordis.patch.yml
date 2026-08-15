@@ -190,7 +190,7 @@
       name: '@deepseek-ai/dsh-client-ui-settings-general'
 
     - id: ui-settings-models
-      name: '@deepseek-ai/dsh-client-ui-settings-models'
+      name: '@graysilver/oh-my-dsh-models'
 
     - id: ui-settings-plugin-inventory
       name: '@deepseek-ai/dsh-client-ui-settings-plugin-inventory'
@@ -256,7 +256,7 @@
     # The agent-preset row in General settings: the default preset for
     # sessions created later. Absent a roster it renders nothing.
     - id: ui-agent-preset
-      name: '@deepseek-ai/dsh-client-ui-agent-preset'
+      name: '@graysilver/oh-my-dsh-task-modes'
 
     # Plugin configuration: the host-plane sections a user owns, as expandable
     # cards. A namespace this deployment does not expose renders nothing.

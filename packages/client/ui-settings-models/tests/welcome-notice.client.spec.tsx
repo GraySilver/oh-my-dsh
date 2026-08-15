@@ -63,9 +63,9 @@ function mount(version?: string, mutateImpl: () => Promise<unknown> = () => Prom
 describe('WelcomeNotice', () => {
   it('uses the exact owner copy in both GUI locales', () => {
     expect(WELCOME_NOTICE_COPY.en).toEqual({
-      title: 'Internal Testing Notice',
-      body: "DeepSeek Harness 0.1 remains in testing for Harness developers. Many areas need further improvement, and we welcome feedback from the developer community. DeepSeek Harness's core plugins and foundational APIs will continue to evolve rapidly over the coming months.\n\nWe look forward to exploring the limits of intelligence with developers around the world, building on open-source, open, reusable, and composable infrastructure. We welcome Harness developers everywhere to join the DSH plugin ecosystem.",
-      continueLabel: 'Continue',
+      title: 'Welcome to Oh My DSH',
+      body: 'This is a ready-to-use local Web workspace powered by DeepSeek Harness. Project files, sessions, and credentials stay on your computer, and telemetry is off by default.\n\nConnect DeepSeek, then choose Quick, Plan first, or Autonomous to begin. File writes and command execution continue to follow the Harness permission and confirmation model.',
+      continueLabel: 'Set up',
     })
     expect(en.welcomeBody).toBe(WELCOME_NOTICE_COPY.en.body)
     expect(zh.welcomeBody).toBe(WELCOME_NOTICE_COPY.zh.body)

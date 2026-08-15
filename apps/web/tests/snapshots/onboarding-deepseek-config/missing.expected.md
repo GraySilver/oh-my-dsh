@@ -1,8 +1,8 @@
-- dialog "添加一个 API Key 开始使用":
-  - heading "添加一个 API Key 开始使用" [level=2]
-  - paragraph: 配置 DeepSeek 官方模型，即可开始使用。
+- dialog "连接 DeepSeek":
+  - heading "连接 DeepSeek" [level=2]
+  - paragraph: API 密钥会先直接连接 DeepSeek 测试，通过后才保存在本机；Oh My DSH 不会将它发送到其他地方。
   - text: API 密钥
   - textbox "API 密钥":
     - /placeholder: 输入 API 密钥
   - button "稍后配置"
-  - button "保存并继续" [disabled]
+  - button "测试连接、保存并继续" [disabled]

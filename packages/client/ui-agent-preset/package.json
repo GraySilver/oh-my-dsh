@@ -1,13 +1,13 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-agent-preset",
-  "description": "Agent-preset surfaces: the default for later sessions, this session's seat, and the composition editor",
-  "version": "0.1.0-rc.5",
+  "name": "@graysilver/oh-my-dsh-task-modes",
+  "description": "Oh My DSH task modes, current-directory launch, and agent-preset settings",
+  "version": "0.1.0",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "url": "git+https://github.com/GraySilver/oh-my-dsh.git",
     "directory": "packages/client/ui-agent-preset"
   },
   "type": "module",

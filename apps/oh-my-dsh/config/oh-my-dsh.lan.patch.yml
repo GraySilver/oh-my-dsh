@@ -1,0 +1,11 @@
+# Deliberate LAN opt-in selected only by `oh-my-dsh --host 0.0.0.0`.
+# Every device that can reach this port receives the same product permissions
+# as localhost, including settings and credentials, and can operate an agent
+# with the current user's filesystem and command permissions. Loopback remains
+# the default; use this mode only on a trusted network.
+
+- id: webserver
+  name: '@deepseek-ai/dsh-host-webserver'
+  config:
+    host: '0.0.0.0'
+    port: 3080

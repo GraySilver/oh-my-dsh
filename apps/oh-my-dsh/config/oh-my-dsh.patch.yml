@@ -1,0 +1,37 @@
+# Oh My DSH owns only the product layer. The complete host and browser
+# composition remains the published upstream Web profile underneath it.
+
+- id: ui-settings-models
+  name: '@deepseek-ai/dsh-client-ui-settings-models'
+  disabled: true
+
+- id: ui-agent-preset
+  name: '@deepseek-ai/dsh-client-ui-agent-preset'
+  disabled: true
+
+# Replace the upstream connection row with a product wrapper. Both its Host
+# and browser halves reuse the upstream implementation; the wrapper widens the
+# explicitly trusted LAN origins to the same product capability as localhost.
+- id: connection
+  name: '@deepseek-ai/dsh-client-connection'
+  disabled: true
+
+# A patch cannot change a row's package identity. Disable the upstream rows,
+# then add product-owned rows under independent ids.
+- insert:
+    - id: oh-my-dsh-product
+      name: '@graysilver/oh-my-dsh'
+      inject: [webRuntime]
+      config:
+        connectionTimeoutMs: 10000
+        trustedHosts: !!js ctx.webRuntime.trustedHosts
+
+    - id: oh-my-dsh-models
+      name: '@graysilver/oh-my-dsh-models'
+
+    - id: oh-my-dsh-task-modes
+      name: '@graysilver/oh-my-dsh-task-modes'
+
+# Privacy is a product default, not a best-effort runtime flag.
+- id: session-telemetry-otel
+  disabled: true

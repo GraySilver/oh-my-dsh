@@ -446,10 +446,10 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
               </div>
             )
             : (
-              // One row for the two ways to gain a provider: adopt one the
-              // adapter already knows, or declare one it does not. Side by side
-              // and equal-width so they read as siblings and line up with the
-              // rows above, rather than two pills of different lengths.
+          // One row for the two ways to gain a provider: adopt one the
+          // adapter already knows, or declare one it does not. Side by side
+          // and equal-width so they read as siblings and line up with the
+          // rows above, rather than two pills of different lengths.
               <div className={styles['addActions']}>
                 <button
                   type="button"

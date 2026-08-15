@@ -1,0 +1,69 @@
+{
+  "name": "@graysilver/oh-my-dsh",
+  "description": "Oh My DSH: an opinionated, Web-only DeepSeek Harness experience",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GraySilver/oh-my-dsh.git",
+    "directory": "apps/oh-my-dsh"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "oh-my-dsh": "lib/bin.js"
+  },
+  "dsh": {
+    "client": {
+      "inject": [],
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "files": [
+    "lib/*.js",
+    "lib/types/**/*.d.ts",
+    "config"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "ohMyDsh": {
+    "upstreamCommit": "47f943859bef60e4160492346772ded9b24f765a",
+    "upstreamPackage": "0.1.0-rc.6"
+  },
+  "scripts": {
+    "bundle": "tsdown",
+    "watch": "tsdown --watch"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-app-boot": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-connection": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-host-apiproxy": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-llm": "0.1.0-rc.6",
+    "@graysilver/oh-my-dsh-models": "workspace:^",
+    "@graysilver/oh-my-dsh-task-modes": "workspace:^",
+    "js-yaml": "^4.2.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "workspace:^",
+    "@deepseek-ai/dsh-host-webserver": "workspace:^",
+    "@types/js-yaml": "^4.0.9"
+  }
+}

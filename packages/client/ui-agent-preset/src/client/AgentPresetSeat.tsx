@@ -20,6 +20,8 @@ import { IconAgentPresetOutline16, IconChevronDownOutline14, Menu } from '@deeps
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { AgentPresetSeatState } from './seat-store.ts'
 import { presetDisplayText } from './locales.ts'
+import { TaskModeLauncher } from './TaskModeLauncher.tsx'
+import type { TaskMode } from './TaskModeLauncher.tsx'
 import css from './AgentPresetSeat.module.css'
 
 /** Registration-side business face for the hero chip. */
@@ -34,6 +36,12 @@ export interface AgentPresetSeatInjected {
   select: (id: string) => Promise<void>
   /** Clear the one-shot introduce cue once the chip has played it. */
   introduced: () => void
+  /** Start a task through the existing prompt, plan-command, or goal-command channel. */
+  startTask: (mode: TaskMode, task: string) => Promise<void>
+  /** Invoking directory handed over by the product launcher, when present. */
+  launchCwd?: string
+  /** Register and open the invoking directory as the active workspace. */
+  useLaunchWorkspace: () => Promise<void>
 }
 
 /* Introduce timeline: the icon eases in first (the CSS animation shares this
@@ -68,7 +76,9 @@ export type AgentPresetSeatProps =
  * @param props - composed slot props.
  * @returns the chip, or null when the deployment composes no presets.
  */
-export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, t }: AgentPresetSeatProps) {
+export function AgentPresetSeat({
+  load, select, introduced, startTask, launchCwd, useLaunchWorkspace, useAgentPresetSeat, t,
+}: AgentPresetSeatProps) {
   const state = useAgentPresetSeat(snapshot => snapshot)
   const [open, setOpen] = useState(false)
 
@@ -101,10 +111,6 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
     return () => { window.clearTimeout(done) }
   }, [state.introduce, ready, label, introduced])
 
-  // Nothing to choose between: the deployment composes no presets and every
-  // session shares the host composition.
-  if (!ready) return null
-
   // One wrapper span: the chip is a flex row with a gap, so loose character
   // spans would each pick up the gap between them.
   const characters = Array.from(label)
@@ -125,7 +131,7 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
     )
     : label
 
-  return (
+  const presetMenu = !ready ? null : (
     <Menu
       open={open}
       onClose={() => { setOpen(false) }}
@@ -166,5 +172,17 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
         </button>
       )}
     />
+  )
+
+  return (
+    <div className={css.productBar}>
+      <TaskModeLauncher
+        startTask={startTask}
+        useLaunchWorkspace={useLaunchWorkspace}
+        t={t}
+        {...launchCwd === undefined ? {} : { launchCwd }}
+      />
+      {presetMenu}
+    </div>
   )
 }

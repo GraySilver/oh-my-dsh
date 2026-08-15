@@ -3,7 +3,8 @@
  * readable from the repository rather than derived inside CI
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
- * The dsh family shares one version across its members and the workspace root:
+ * The dsh family shares one version across its members and the workspace root;
+ * the Oh My DSH product family shares its own version across three members:
  * `major`, `minor`, `patch`, or an explicit `x.y.z` (including a prerelease such
  * as `0.0.1-rc.1`). The vendored family has one version line per package, but
  * every release advances and publishes the complete family so the next release
@@ -236,8 +237,8 @@ function rootVersion(root: string): string {
 }
 
 /**
- * Plan the dsh family's rewrite: one version for every member and the root.
- * @param family - the dsh family.
+ * Plan a shared-version family's rewrite, optionally including the root.
+ * @param family - the shared-version family.
  * @param root - repository root.
  * @param members - the family's members.
  * @param request - `major`, `minor`, `patch`, or an explicit version.
@@ -248,15 +249,15 @@ function planShared(
   root: string,
   members: readonly ReleaseMember[],
   request: string,
+  includeRoot: boolean,
 ): { planned: PlannedVersion[]; version: string } {
   const [first] = members
   if (first === undefined) throw new Error(`release family ${family.id} has no members`)
   const version = nextSharedVersion(first.version, request)
-  // The workspace root carries the family version too: the workspace constraint
-  // requires every member's version to equal the root's.
-  const planned: PlannedVersion[] = [
-    { manifestPath: ROOT_MANIFEST, label: ROOT_MANIFEST, from: rootVersion(root), to: version, tag: undefined },
-  ]
+  // Only dsh includes the workspace root; Oh My DSH has an independent line.
+  const planned: PlannedVersion[] = includeRoot
+    ? [{ manifestPath: ROOT_MANIFEST, label: ROOT_MANIFEST, from: rootVersion(root), to: version, tag: undefined }]
+    : []
   for (const member of members) {
     planned.push({
       manifestPath: join(member.directory, 'package.json'),
@@ -311,7 +312,7 @@ function main(): void {
     },
     allowPositionals: true,
   })
-  if (values.family === undefined) throw new Error('usage: bump.ts --family <dsh|vendor> [version]')
+  if (values.family === undefined) throw new Error('usage: bump.ts --family <dsh|oh-my-dsh|vendor> [version]')
 
   const family = releaseFamily(values.family)
   const root = process.cwd()
@@ -320,13 +321,13 @@ function main(): void {
 
   let planned: PlannedVersion[]
   let sharedVersion: string | undefined
-  if (family.id === 'dsh') {
+  if (family.id === 'dsh' || family.id === 'oh-my-dsh') {
     const request = positionals[0]
-    if (request === undefined) throw new Error('usage: release:dsh <major|minor|patch|x.y.z>')
+    if (request === undefined) throw new Error(`usage: release:${family.id} <major|minor|patch|x.y.z>`)
     if (values.prerelease !== undefined) {
-      throw new Error('release:dsh takes the prerelease in its version argument, as in 0.0.1-rc.1')
+      throw new Error(`release:${family.id} takes the prerelease in its version argument, as in 0.0.1-rc.1`)
     }
-    const shared = planShared(family, root, members, request)
+    const shared = planShared(family, root, members, request, family.id === 'dsh')
     planned = shared.planned
     sharedVersion = shared.version
   } else {
@@ -359,7 +360,7 @@ function main(): void {
   }
   capture('git', ['add', 'pnpm-lock.yaml', ...planned.map(entry => entry.manifestPath)])
   capture('git', ['commit', '-m', `release(${family.id}): ${summary}`])
-  console.log('release bump: committed. After this merges to master, tag it:')
+  console.log('release bump: committed. After this merges to the default branch, tag it:')
   for (const tag of [...new Set(planned.map(entry => entry.tag).filter(tag => tag !== undefined))]) {
     console.log(`  git tag ${tag} <merge commit> && git push origin ${tag}`)
   }

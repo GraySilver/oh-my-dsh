@@ -1,0 +1,111 @@
+# Build the independent Oh My DSH product family. A product tag promotes the
+# exact tarballs through the protected npm environment; pull requests only
+# prove that those same artifacts still build and install.
+name: Release (Oh My DSH)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['oh-my-dsh-v*']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish from an oh-my-dsh-v* tag after environment approval.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PRIMARY_NODE_VERSION: '24'
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  pack:
+    name: Build and pack product tarballs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+
+      - name: Install immutable workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify product release version
+        env:
+          RELEASE_PUBLISH: ${{ startsWith(github.ref, 'refs/tags/oh-my-dsh-v') || inputs.publish }}
+        run: pnpm run release:verify --family oh-my-dsh
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Run product tests
+        run: pnpm exec vitest run apps/oh-my-dsh/tests packages/client/ui-agent-preset/tests packages/client/ui-settings-models/tests
+
+      - name: Pack product family
+        run: pnpm run release:pack --family oh-my-dsh --out dist/npm-oh-my-dsh
+
+      - name: Verify clean installed product
+        run: pnpm run release:verify-packed-install --family oh-my-dsh --from dist/npm-oh-my-dsh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oh-my-dsh-npm-tarballs
+          path: dist/npm-oh-my-dsh/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish product to npm
+    if: startsWith(github.ref, 'refs/tags/oh-my-dsh-v') || inputs.publish
+    needs: pack
+    runs-on: ubuntu-24.04
+    environment: npm-publish
+    concurrency:
+      group: Release-publish
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+          registry-url: https://registry.npmjs.org
+
+      - name: Install release scripts only
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: oh-my-dsh-npm-tarballs
+          path: dist/npm-oh-my-dsh
+
+      - name: Publish exact packed bytes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm run release:publish --family oh-my-dsh --from dist/npm-oh-my-dsh

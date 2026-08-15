@@ -1,8 +1,10 @@
-# dsh-client-ui-agent-preset
+# @graysilver/oh-my-dsh-task-modes
 
 English | [中文](README.zh.md)
 
-The agent-preset surfaces: a General-settings row choosing which [preset](../../preset/agent-presets/README.md) new sessions are composed from, a chip on the new-session screen choosing the next session's, a read-only label in the session header, and a settings section that manages the roster — copy, delete, default, and the way into a preset's own files.
+The Oh My DSH task launcher plus the inherited agent-preset surfaces. The launcher turns three product choices into existing Harness operations: Quick sends the prompt, Plan first executes `/plan` and then sends it, and Autonomous executes `/goal <objective>`. A `cwd` URL handoff registers the directory through the existing Workspace API and starts its session; the value is removed from browser history after adoption.
+
+The same package retains the General-settings row choosing which [preset](../../preset/agent-presets/README.md) new sessions are composed from, a chip on the new-session screen choosing the next session's, a read-only label in the session header, and a settings section that manages the roster.
 
 ## Why it is a new-session preference
 
@@ -54,7 +56,7 @@ Setting the default writes the `agent-presets` settings namespace, which the hos
 
 ## When the surfaces are absent
 
-A deployment that composes no presets answers with an empty roster, and the row, the chip, the label, and the section all render nothing — every session then shares the host composition, and there is nothing to choose between or manage. A deployment that configures no writable root answers `authorable: false`, and the section stays a read-only browser: the shipped compositions still open in the viewer, but every copy action is disabled with the reason as its tooltip rather than offering a dialog whose create always fails.
+A deployment that composes no presets answers with an empty roster, and the preset row, preset chip, label, and management section all render nothing. The Oh My DSH task launcher remains available because its three modes use the conversation and command channels, not the preset roster. A deployment that configures no writable root answers `authorable: false`, and the section stays a read-only browser.
 
 ## Model Experience
 

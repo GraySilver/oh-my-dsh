@@ -47,6 +47,8 @@ const repositoryUrl = 'git+https://github.com/deepseek-harness/deepseek-harness.
  * their trusted publishing against the repository that runs the workflow.
  */
 const publishedRepositoryUrl = 'git+https://github.com/deepseek-ai/deepseek-harness.git'
+/** Source home for the independently published product layer. */
+const productRepositoryUrl = 'git+https://github.com/GraySilver/oh-my-dsh.git'
 /** Directories whose packages this repository publishes: one release member each. */
 const releaseMemberDirectory = /^(?:packages\/[^/]+\/[^/]+|apps\/[^/]+|vendor\/[^/]+)$/
 
@@ -84,6 +86,7 @@ interface PackageManifest {
   devDependencies?: Record<string, string>
   dependencies?: Record<string, string>
   optionalDependencies?: Record<string, string>
+  ohMyDsh?: { upstreamPackage?: string }
 }
 
 /** One workspace manifest and its repo-relative path. */
@@ -257,10 +260,13 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
     if (manifest.publishConfig?.access !== 'public') {
       errors.push(`${label}: release member must set publishConfig.access to "public"`)
     }
+    const expectedRepository = manifest.name?.startsWith('@graysilver/')
+      ? productRepositoryUrl
+      : publishedRepositoryUrl
     if (manifest.repository?.type !== 'git'
-      || manifest.repository.url !== publishedRepositoryUrl
+      || manifest.repository.url !== expectedRepository
       || manifest.repository.directory !== dir) {
-      errors.push(`${label}: release member repository must use ${publishedRepositoryUrl} with directory ${dir}`)
+      errors.push(`${label}: release member repository must use ${expectedRepository} with directory ${dir}`)
     }
   } else if (manifest.private !== true) {
     errors.push(`${label}: package.json must set "private": true`)
@@ -399,6 +405,25 @@ function checkWorkspaceProtocol(manifests: readonly WorkspaceManifest[]): string
     for (const section of dependencySections) {
       for (const [name, range] of Object.entries(manifest[section] ?? {})) {
         if (!members.has(name) || range.startsWith('workspace:')) continue
+        // The product wrapper deliberately exercises the official npm engine,
+        // not this fork's internal synchronization sources. Keep that boundary
+        // exact and metadata-pinned; no other workspace edge may bypass links.
+        const externalProductEngine = manifest.name === '@graysilver/oh-my-dsh'
+          && section === 'dependencies'
+          && (
+            name === '@deepseek-ai/dsh'
+            || name === '@deepseek-ai/dsh-app-boot'
+            || name === '@deepseek-ai/dsh-client-connection'
+            || name === '@deepseek-ai/dsh-host-apiproxy'
+            || name === '@deepseek-ai/dsh-llm'
+          )
+        if (externalProductEngine) {
+          const expected = manifest.ohMyDsh?.upstreamPackage
+          if (range !== expected) {
+            errors.push(`${manifest.name}: ${section}.${name} must equal ohMyDsh.upstreamPackage ${expected ?? '(missing)'}, got ${range}`)
+          }
+          continue
+        }
         errors.push(`${manifest.name ?? dir}: ${section}.${name} must use the workspace: protocol, got ${range}`)
       }
     }

@@ -17,6 +17,10 @@ export type AgentPresetSettingsKey =
   | 'openLocation' | 'showLocation' | 'revealedPathLabel'
   | 'idRequired' | 'idInvalid' | 'idTaken'
   | 'deleteTitle' | 'deleteDescription' | 'deleteConfirm' | 'deleting'
+  | 'productName' | 'startTask' | 'taskDialogTitle' | 'taskDialogDescription'
+  | 'taskMode' | 'modeQuick' | 'modeQuickDescription' | 'modePlan' | 'modePlanDescription'
+  | 'modeAutonomous' | 'modeAutonomousDescription' | 'taskLabel' | 'taskPlaceholder'
+  | 'taskRequired' | 'startingTask' | 'start' | 'useCurrentDirectory' | 'usingDirectory'
 
 /** English copy. */
 export const en: Record<AgentPresetSettingsKey, string> = {
@@ -82,6 +86,24 @@ export const en: Record<AgentPresetSettingsKey, string> = {
     'The preset directory is deleted. Sessions already running on it keep working; new sessions cannot select it.',
   deleteConfirm: 'Delete',
   deleting: 'Deleting…',
+  productName: 'Oh My DSH',
+  startTask: 'Start a task',
+  taskDialogTitle: 'How should this task run?',
+  taskDialogDescription: 'Choose the amount of structure and autonomy. You can keep working in the same browser session.',
+  taskMode: 'Task mode',
+  modeQuick: 'Quick',
+  modeQuickDescription: 'Send the task immediately. Best for focused questions and small changes.',
+  modePlan: 'Plan first',
+  modePlanDescription: 'Enter Harness plan mode, then send the task for a reviewable plan before implementation.',
+  modeAutonomous: 'Autonomous',
+  modeAutonomousDescription: 'Create a persistent goal and let the goal driver continue across multiple rounds.',
+  taskLabel: 'Task',
+  taskPlaceholder: 'Describe the outcome you want…',
+  taskRequired: 'Describe a task before starting.',
+  startingTask: 'Starting…',
+  start: 'Start',
+  useCurrentDirectory: 'Use launch directory',
+  usingDirectory: 'Opening directory…',
 }
 
 /** Simplified Chinese copy. */
@@ -139,6 +161,24 @@ export const zh: Record<AgentPresetSettingsKey, string> = {
   deleteDescription: '预设目录将被删除。已在其上运行的会话不受影响；新会话将无法再选择它。',
   deleteConfirm: '删除',
   deleting: '正在删除…',
+  productName: 'Oh My DSH',
+  startTask: '开始任务',
+  taskDialogTitle: '这个任务要怎样运行？',
+  taskDialogDescription: '选择任务需要的规划程度和自主性；后续仍可在同一个浏览器会话中继续协作。',
+  taskMode: '任务模式',
+  modeQuick: '快速执行',
+  modeQuickDescription: '立即发送任务，适合明确的问题、小范围修改和快速探索。',
+  modePlan: '先做计划',
+  modePlanDescription: '先进入 Harness 计划模式，产出可审阅的方案，再开始实现。',
+  modeAutonomous: '自主完成',
+  modeAutonomousDescription: '创建持久目标，由 Goal Driver 跨多轮持续推进，直到完成或需要你介入。',
+  taskLabel: '任务',
+  taskPlaceholder: '描述你希望最终达成的结果…',
+  taskRequired: '请先描述任务。',
+  startingTask: '正在开始…',
+  start: '开始',
+  useCurrentDirectory: '使用启动目录',
+  usingDirectory: '正在打开目录…',
 }
 
 /** Preset roster fields needed to resolve Web display copy. */

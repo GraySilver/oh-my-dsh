@@ -1,7 +1,6 @@
 /**
- * The three independent publish sequences this repository releases from
- * (`packages/` + `apps/`, `vendor/`, and `native/`) and the two this module
- * owns: `dsh` and `vendor`. Each family carries its own version baseline, tag
+ * The independent publish sequences this repository releases from and the
+ * three this module owns: `dsh`, `oh-my-dsh`, and `vendor`. Each family carries its own version baseline, tag
  * naming, and publish set, so releasing one never republishes another
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
@@ -63,6 +62,10 @@ export interface InstalledEntry {
   readonly packageName: string
   /** Path to the executable inside that package. */
   readonly binPath: string
+  /** Optional second invocation that proves the installed runtime closure. */
+  readonly smokeArgs?: readonly string[]
+  /** Omit optional packages when this family's supplied tarballs replace them. */
+  readonly omitOptionalDependencies?: boolean
 }
 
 /** A release sequence: its members, its version baseline, and its tag naming. */
@@ -75,6 +78,11 @@ export abstract class ReleaseFamily {
 
   /** Git tag prefix this family publishes from. */
   abstract readonly tagPrefix: string
+
+  /** Whether one manifest selected by the family patterns belongs to this release sequence. */
+  protected acceptsPackage(name: string): boolean {
+    return name.startsWith('@deepseek-ai/')
+  }
 
   /**
    * Discover this family's members.
@@ -93,7 +101,7 @@ export abstract class ReleaseFamily {
       const name = requireString(manifest, 'name', normalized)
       const version = requireString(manifest, 'version', normalized)
       if (name === WORKSPACE_ROOT_PACKAGE) throw new Error(`${normalized} selected the workspace root`)
-      if (!name.startsWith('@deepseek-ai/')) throw new Error(`${normalized} must name an @deepseek-ai package`)
+      if (!this.acceptsPackage(name)) continue
       if (seen.has(name)) throw new Error(`${name} appears twice in release family ${this.id}`)
       seen.add(name)
       members.push({
@@ -103,6 +111,7 @@ export abstract class ReleaseFamily {
         manifest,
       })
     }
+    if (members.length === 0) throw new Error(`release family ${this.id} accepted no manifests`)
     return members
   }
 
@@ -228,7 +237,48 @@ class DshFamily extends ReleaseFamily {
     validateTarballPayload(files, member.name)
   }
 
-  readonly installedEntry = { packageName: '@deepseek-ai/dsh', binPath: 'lib/bin.js' }
+  readonly installedEntry = {
+    packageName: '@deepseek-ai/dsh',
+    binPath: 'lib/bin.js',
+    omitOptionalDependencies: true,
+  }
+}
+
+/** The product wrapper and its two browser plugins: one independently releasable product. */
+class OhMyDshFamily extends ReleaseFamily {
+  readonly id = 'oh-my-dsh'
+  readonly patterns = [
+    'apps/oh-my-dsh/package.json',
+    'packages/client/ui-agent-preset/package.json',
+    'packages/client/ui-settings-models/package.json',
+  ] as const
+  readonly tagPrefix = 'oh-my-dsh-v'
+
+  protected override acceptsPackage(name: string): boolean {
+    return name.startsWith('@graysilver/')
+  }
+
+  verifyVersions(members: readonly ReleaseMember[]): void {
+    const versions = new Set(members.map(member => member.version))
+    if (versions.size !== 1) {
+      const detail = members.map(member => `${member.directory}: ${member.version}`).join('\n')
+      throw new Error(`oh-my-dsh release members must share one version:\n${detail}`)
+    }
+  }
+
+  tagPrefixFor(): string {
+    return this.tagPrefix
+  }
+
+  validatePayload(member: ReleaseMember, files: readonly string[]): void {
+    validateTarballPayload(files, member.name)
+  }
+
+  readonly installedEntry = {
+    packageName: '@graysilver/oh-my-dsh',
+    binPath: 'lib/bin.js',
+    smokeArgs: ['doctor', '--json'],
+  }
 }
 
 /** `vendor/*`: every package keeps its own version line, so every package has its own tag. */
@@ -280,7 +330,7 @@ class VendorFamily extends ReleaseFamily {
 
 /** Every release family this module owns, in workflow order. */
 function releaseFamilies(): readonly ReleaseFamily[] {
-  return [new DshFamily(), new VendorFamily()]
+  return [new DshFamily(), new OhMyDshFamily(), new VendorFamily()]
 }
 
 /**

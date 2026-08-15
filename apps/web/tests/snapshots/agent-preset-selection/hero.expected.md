@@ -2,6 +2,7 @@
   - img
   - text: workspace
   - img
+- button "Oh My DSH Start a task"
 - button "Standard mode":
   - img
   - text: Standard mode

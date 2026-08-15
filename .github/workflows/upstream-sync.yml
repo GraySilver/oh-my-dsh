@@ -1,0 +1,92 @@
+# Keep the fork close to DeepSeek Harness while preserving a review boundary
+# around product compatibility. The automation updates one stable draft PR;
+# it never publishes and it never pushes directly to main.
+name: Sync DeepSeek Harness upstream
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+env:
+  SYNC_BRANCH: automation/upstream-sync
+  PRIMARY_NODE_VERSION: '24'
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Merge the current upstream branch
+        run: |
+          git remote add upstream https://github.com/deepseek-ai/deepseek-harness.git
+          git fetch upstream master --tags
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git switch -C "$SYNC_BRANCH" origin/main
+          if ! git merge-base --is-ancestor upstream/master origin/main; then
+            git merge --no-edit upstream/master
+          fi
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+
+      - name: Align the product engine with the latest official package
+        run: |
+          official_version=$(npm view @deepseek-ai/dsh version)
+          npm pkg set --prefix apps/oh-my-dsh "dependencies.@deepseek-ai/dsh=$official_version"
+          npm pkg set --prefix apps/oh-my-dsh "dependencies.@deepseek-ai/dsh-app-boot=$official_version"
+          npm pkg set --prefix apps/oh-my-dsh "dependencies.@deepseek-ai/dsh-client-connection=$official_version"
+          npm pkg set --prefix apps/oh-my-dsh "dependencies.@deepseek-ai/dsh-host-apiproxy=$official_version"
+          npm pkg set --prefix apps/oh-my-dsh "ohMyDsh.upstreamPackage=$official_version"
+          npm pkg set --prefix apps/oh-my-dsh "ohMyDsh.upstreamCommit=$(git rev-parse upstream/master)"
+          pnpm install --lockfile-only
+          git add apps/oh-my-dsh/package.json pnpm-lock.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(upstream): align product engine metadata"
+          fi
+          if git diff --quiet origin/main...HEAD; then
+            echo "SYNC_CHANGED=false" >> "$GITHUB_ENV"
+          else
+            echo "SYNC_CHANGED=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Push the compatibility branch
+        if: env.SYNC_CHANGED == 'true'
+        run: git push --force-with-lease origin "$SYNC_BRANCH"
+
+      - name: Create or update the draft compatibility PR
+        if: env.SYNC_CHANGED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr=$(gh pr list --head "$SYNC_BRANCH" --base main --json number --jq '.[0].number // empty')
+          body='Automated merge from deepseek-ai/deepseek-harness. Review product UI, the Web-only CLI boundary, focused tests, and packed-install verification before marking this PR ready.'
+          if [ -z "$pr" ]; then
+            gh pr create --draft --base main --head "$SYNC_BRANCH" --title "chore: sync DeepSeek Harness upstream" --body "$body"
+          else
+            gh pr edit "$pr" --title "chore: sync DeepSeek Harness upstream" --body "$body"
+          fi
+
+      - name: Install and run compatibility checks
+        if: env.SYNC_CHANGED == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run typecheck
+          pnpm exec vitest run apps/oh-my-dsh/tests packages/client/ui-agent-preset/tests packages/client/ui-settings-models/tests

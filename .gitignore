@@ -11,6 +11,8 @@ examples/*/*.jsonl
 .sessions/
 examples/*/.sessions/
 coverage/
+/dist/
+/website/.vitepress/.temp/
 .doc-typecheck-*/
 .node-next-types-*/
 .oxlint-contract-*/

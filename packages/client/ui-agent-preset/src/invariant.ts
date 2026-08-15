@@ -1,13 +1,13 @@
 /**
- * Package-owned invariant companion for `@deepseek-ai/dsh-client-ui-agent-preset`.
- * @module @deepseek-ai/dsh-client-ui-agent-preset/invariant
+ * Package-owned invariant companion for `@graysilver/oh-my-dsh-task-modes`.
+ * @module @graysilver/oh-my-dsh-task-modes/invariant
  */
 
 /* jscpd:ignore-start */
 import type { Context } from '@deepseek-ai/cordis'
 import type { InvariantInstaller } from '@deepseek-ai/dsh-invariants'
 
-const PACKAGE_NAME = '@deepseek-ai/dsh-client-ui-agent-preset'
+const PACKAGE_NAME = '@graysilver/oh-my-dsh-task-modes'
 
 /** Cordis companion plugin name. */
 export const name = 'client-ui-agent-preset-invariant'

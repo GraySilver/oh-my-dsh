@@ -16,13 +16,15 @@ function member(directory: string, name: string, manifest: Record<string, unknow
 }
 
 describe('release families', () => {
-  it('names one tag for the whole dsh family and one per vendored package', () => {
+  it('names shared tags for the two applications and one per vendored package', () => {
     const dsh = releaseFamily('dsh')
+    const product = releaseFamily('oh-my-dsh')
     const vendor = releaseFamily('vendor')
     const cli = member('apps/cli', '@deepseek-ai/dsh')
     const cordis = { ...member('vendor/cordis', '@deepseek-ai/cordis'), version: '4.0.1' }
 
     expect(dsh.tagFor(cli)).toBe('dsh-v0.0.1')
+    expect(product.tagFor(member('apps/oh-my-dsh', '@graysilver/oh-my-dsh'))).toBe('oh-my-dsh-v0.0.1')
     expect(vendor.tagFor(cordis)).toBe('vendor-cordis-v4.0.1')
     // The prefix is constructed, not recovered from a tag: a version with a
     // hyphen would defeat any suffix-stripping.
@@ -87,7 +89,17 @@ describe('release families', () => {
   })
 
   it('drives the installed entry only for the family that publishes one', () => {
-    expect(releaseFamily('dsh').installedEntry).toEqual({ packageName: '@deepseek-ai/dsh', binPath: 'lib/bin.js' })
+    expect(releaseFamily('dsh').installedEntry).toEqual({
+      packageName: '@deepseek-ai/dsh',
+      binPath: 'lib/bin.js',
+      omitOptionalDependencies: true,
+    })
+    expect(releaseFamily('oh-my-dsh').installedEntry)
+      .toEqual({
+        packageName: '@graysilver/oh-my-dsh',
+        binPath: 'lib/bin.js',
+        smokeArgs: ['doctor', '--json'],
+      })
     expect(releaseFamily('vendor').installedEntry).toBeUndefined()
   })
 
