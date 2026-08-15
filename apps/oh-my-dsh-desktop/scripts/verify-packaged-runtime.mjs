@@ -5,8 +5,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const packageDirectory = dirname(dirname(fileURLToPath(import.meta.url)))
-const applicationDirectory = join(packageDirectory, 'release', 'mac-universal', 'Oh My DSH.app')
-const executable = join(applicationDirectory, 'Contents', 'MacOS', 'Oh My DSH')
+const applicationDirectory = join(packageDirectory, 'release', 'mac-universal', 'OhMyDSH.app')
+const executable = join(applicationDirectory, 'Contents', 'MacOS', 'OhMyDSH')
 const launchModule = join(
   applicationDirectory,
   'Contents',

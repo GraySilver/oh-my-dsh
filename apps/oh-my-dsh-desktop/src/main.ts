@@ -56,21 +56,21 @@ function updateTray(): void {
   const localUrl = status.localUrl
   const lanUrl = status.lanUrl
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: '打开 Oh My DSH', click: showWindow },
+    { label: '打开 OhMyDSH', click: showWindow },
     { label: trayStatusLabel(), enabled: false },
     { type: 'separator' },
     ...(localUrl === undefined ? [] : [{ label: `Local: ${localUrl}`, enabled: false }]),
     ...(lanUrl === undefined ? [] : [{ label: `LAN: ${lanUrl}`, enabled: false }]),
     { label: '重启 runtime', click: () => { void startRuntime(true) } },
     { type: 'separator' },
-    { label: '退出 Oh My DSH', click: () => { app.quit() } },
+    { label: '退出 OhMyDSH', click: () => { app.quit() } },
   ]))
-  tray.setToolTip(`Oh My DSH · ${status.state === 'running' ? 'LAN 已开放' : status.state}`)
+  tray.setToolTip(`OhMyDSH · ${status.state === 'running' ? 'LAN 已开放' : status.state}`)
 }
 
 function startupErrorPage(message: string): string {
   const escaped = message.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-  return `<!doctype html><meta charset="utf-8"><title>Oh My DSH</title><style>body{font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:48px;line-height:1.5}main{max-width:720px;margin:auto;background:#fff;border:1px solid #d2d2d7;border-radius:12px;padding:28px}h1{font-size:24px;margin:0 0 12px}p{white-space:pre-wrap}button{font:inherit;padding:8px 14px;border:0;border-radius:8px;background:#0071e3;color:#fff}</style><main><h1>Oh My DSH 无法启动</h1><p>${escaped}</p><p>Desktop 会继续驻留在菜单栏。修复端口或运行环境后，可从菜单栏重启 runtime。</p><button onclick="window.ohMyDshDesktop?.restartRuntime()">重试</button></main>`
+  return `<!doctype html><meta charset="utf-8"><title>OhMyDSH</title><style>body{font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:48px;line-height:1.5}main{max-width:720px;margin:auto;background:#fff;border:1px solid #d2d2d7;border-radius:12px;padding:28px}h1{font-size:24px;margin:0 0 12px}p{white-space:pre-wrap}button{font:inherit;padding:8px 14px;border:0;border-radius:8px;background:#0071e3;color:#fff}</style><main><h1>OhMyDSH 无法启动</h1><p>${escaped}</p><p>Desktop 会继续驻留在菜单栏。修复端口或运行环境后，可从菜单栏重启 runtime。</p><button onclick="window.ohMyDshDesktop?.restartRuntime()">重试</button></main>`
 }
 
 async function loadRuntimePage(baseUrl: string, cwd: string): Promise<void> {
@@ -90,7 +90,7 @@ async function handleRuntimeExit(current: ManagedWebRuntime, exit: WebRuntimeExi
     : `runtime 被 ${exit.signal} 终止`
   publishStatus({ state: 'error', host: WEB_HOST, port: WEB_PORT, message })
   if (exit.code !== 0 && !mainWindow?.isFocused()) {
-    showNativeNotification({ key: `runtime-exit:${String(exit.code)}:${String(exit.signal)}`, title: 'Oh My DSH runtime 已停止', body: message })
+    showNativeNotification({ key: `runtime-exit:${String(exit.code)}:${String(exit.signal)}`, title: 'OhMyDSH runtime 已停止', body: message })
   }
 }
 
@@ -215,7 +215,7 @@ function createWindow(): void {
     minWidth: 920,
     minHeight: 640,
     show: false,
-    title: 'Oh My DSH',
+    title: 'OhMyDSH',
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

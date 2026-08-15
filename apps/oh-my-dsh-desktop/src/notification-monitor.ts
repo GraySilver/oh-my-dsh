@@ -34,7 +34,7 @@ export function notificationOf(envelope: unknown): DesktopNotificationEvent | un
     const toolName = stringField(frame, 'toolName') ?? '工具操作'
     return {
       key: `${type}:${approvalId}`,
-      title: 'Oh My DSH 需要确认',
+      title: 'OhMyDSH 需要确认',
       body: `是否允许 ${toolName} 继续执行？`,
       ...(sessionId === undefined ? {} : { sessionId }),
     }
@@ -46,7 +46,7 @@ export function notificationOf(envelope: unknown): DesktopNotificationEvent | un
     const rpcId = stringField(full, 'rpcId') ?? sessionId ?? 'unknown'
     return {
       key: `${type}:${rpcId}`,
-      title: 'Oh My DSH 等待你的回答',
+      title: 'OhMyDSH 等待你的回答',
       body: question,
       ...(sessionId === undefined ? {} : { sessionId }),
     }
@@ -55,7 +55,7 @@ export function notificationOf(envelope: unknown): DesktopNotificationEvent | un
     const message = stringField(frame, 'message') ?? 'Agent 运行失败。'
     return {
       key: `${type}:${sessionId ?? 'unknown'}:${message}`,
-      title: 'Oh My DSH 运行失败',
+      title: 'OhMyDSH 运行失败',
       body: message,
       ...(sessionId === undefined ? {} : { sessionId }),
     }
@@ -71,7 +71,7 @@ export function notificationOf(envelope: unknown): DesktopNotificationEvent | un
   if (kind === 'completed') {
     return {
       key: `${type}:${sessionId ?? 'unknown'}:${sequence}`,
-      title: 'Oh My DSH 任务完成',
+      title: 'OhMyDSH 任务完成',
       body: turn === '' ? '任务已完成。' : `第 ${turn} 轮任务已完成。`,
       ...(sessionId === undefined ? {} : { sessionId }),
     }
@@ -80,7 +80,7 @@ export function notificationOf(envelope: unknown): DesktopNotificationEvent | un
     const message = stringField(recordOf(reason?.error), 'message') ?? '任务执行失败。'
     return {
       key: `${type}:${sessionId ?? 'unknown'}:${sequence}:error`,
-      title: 'Oh My DSH 任务失败',
+      title: 'OhMyDSH 任务失败',
       body: message,
       ...(sessionId === undefined ? {} : { sessionId }),
     }

@@ -11,7 +11,7 @@ describe('Desktop native notifications', () => {
       },
     })).toEqual({
       key: 'session/event:session-1:12',
-      title: 'Oh My DSH 任务完成',
+      title: 'OhMyDSH 任务完成',
       body: '第 3 轮任务已完成。',
       sessionId: 'session-1',
     })
@@ -29,7 +29,7 @@ describe('Desktop native notifications', () => {
         },
       },
     })).toMatchObject({
-      title: 'Oh My DSH 任务失败',
+      title: 'OhMyDSH 任务失败',
       body: 'provider unavailable',
     })
   })
@@ -38,7 +38,7 @@ describe('Desktop native notifications', () => {
     expect(notificationOf({
       rpcId: 'approval-rpc',
       payload: { type: 'approval/requested', sessionId: 'session-3', approvalId: 'approval-1', toolName: 'bash' },
-    })).toMatchObject({ key: 'approval/requested:approval-1', title: 'Oh My DSH 需要确认' })
+    })).toMatchObject({ key: 'approval/requested:approval-1', title: 'OhMyDSH 需要确认' })
     expect(notificationOf({
       rpcId: 'question-rpc',
       payload: {

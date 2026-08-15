@@ -2,7 +2,7 @@
   "name": "@graysilver/oh-my-dsh-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Oh My DSH macOS Desktop shell",
+  "description": "OhMyDSH macOS Desktop shell",
   "author": "GraySilver",
   "type": "module",
   "main": "dist/main.mjs",
@@ -27,7 +27,8 @@
   },
   "build": {
     "appId": "com.graysilver.ohmydsh",
-    "productName": "Oh My DSH",
+    "productName": "OhMyDSH",
+    "icon": "assets/icon.icns",
     "asar": false,
     "afterPack": "scripts/complete-runtime-deps.mjs",
     "directories": {
@@ -43,7 +44,7 @@
       "x64ArchFiles": "**/*darwin-{x64,arm64}/**/*"
     },
     "dmg": {
-      "title": "Oh My DSH"
+      "title": "OhMyDSH"
     }
   }
 }
