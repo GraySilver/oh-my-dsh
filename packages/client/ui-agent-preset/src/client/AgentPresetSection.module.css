@@ -359,6 +359,20 @@
   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
+@media (max-width: 640px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardHead {
+    flex-wrap: wrap;
+  }
+
+  .inUse {
+    margin-left: 0;
+  }
+}
+
 .error {
   margin: 0;
   font-size: 12px;

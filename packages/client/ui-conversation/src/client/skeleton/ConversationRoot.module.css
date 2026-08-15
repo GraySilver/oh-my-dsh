@@ -358,6 +358,46 @@
   overflow-y: auto;
 }
 
+@media (max-width: 640px) {
+  .header {
+    padding: 8px 12px 0;
+  }
+
+  .titleCluster {
+    gap: 4px;
+  }
+
+  .crumb {
+    max-width: 128px;
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .headerUtilities {
+    gap: 4px;
+    margin-left: 8px;
+  }
+
+  .tabs {
+    gap: 24px;
+    padding-left: 4px;
+  }
+
+  .composerHero {
+    padding-bottom: 16px;
+  }
+
+  /* The hero's three independent controls no longer compete for one line:
+     workspace selection owns the first row, product controls the second. */
+  .heroWorkspaceRow {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 0;
+    padding: 0 8px;
+  }
+}
+
 /* Settling (session replaying, hero/docked unknown): keep the composer seat
    mounted but invisible so no wrong layout flashes before the phase lands. */
 .root[data-phase='settling'] .composerSeat {

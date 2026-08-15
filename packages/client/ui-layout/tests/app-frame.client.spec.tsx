@@ -216,7 +216,7 @@ describe('AppFrame', () => {
 
   it('sidebar slot receives live concession output as owner props', () => {
     const { slotCalls } = mountFrame()
-    expect(slotCalls.find(c => c.key === 'sidebar')!.props).toEqual({ collapsed: false, width: 280 })
+    expect(slotCalls.find(c => c.key === 'sidebar')!.props).toEqual({ collapsed: false, width: 280, mobile: false })
   })
 
   it('sidebar drag widens through rAF-batched pointer moves', () => {
@@ -258,7 +258,7 @@ describe('AppFrame', () => {
     expect(getByTestId('sidebar-content')).toBeTruthy()
     expect(frame.hasAttribute('data-sidebar-collapsed')).toBe(true)
     const lastSidebarCall = slotCalls.filter(c => c.key === 'sidebar').at(-1)!
-    expect(lastSidebarCall.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED })
+    expect(lastSidebarCall.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED, mobile: false })
   })
 
   it('viewport shrink triggers the concession chain via ResizeObserver', () => {
@@ -290,7 +290,7 @@ describe('AppFrame — narrow-viewport auto-collapse', () => {
     const { frame, slotCalls } = mountFrame()
     expect(tracks(frame)).toEqual([SIDEBAR_COLLAPSED, 0])
     expect(frame.hasAttribute('data-sidebar-collapsed')).toBe(true)
-    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED })
+    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({ collapsed: true, width: SIDEBAR_COLLAPSED, mobile: false })
     expect(frame.querySelectorAll('[class*="handle"]')).toHaveLength(0)
   })
 
@@ -325,6 +325,66 @@ describe('AppFrame — narrow-viewport auto-collapse', () => {
     frameWidth = 1920
     act(() => { fireResize?.(); vi.advanceTimersByTime(20) })
     expect(tracks(frame)).toEqual([400, 0])
+  })
+})
+
+describe('AppFrame — mobile overlay shell', () => {
+  beforeEach(() => { frameWidth = 390 })
+
+  it('keeps the center full-width and exposes the collapsed sidebar as a mobile toolbar', () => {
+    const { frame, slotCalls } = mountFrame()
+    expect(tracks(frame)).toEqual([0, 0])
+    expect(frame.hasAttribute('data-mobile')).toBe(true)
+    expect(frame.hasAttribute('data-sidebar-collapsed')).toBe(true)
+    expect(slotCalls.filter(c => c.key === 'sidebar').at(-1)!.props).toEqual({
+      collapsed: true,
+      width: 320,
+      mobile: true,
+    })
+    expect(frame.querySelectorAll('[class*="handle"]')).toHaveLength(0)
+  })
+
+  it('opens navigation as a masked drawer without squeezing the center, then closes from the mask', () => {
+    const { frame, instance } = mountFrame()
+    act(() => { instance.actions.toggleSidebar() })
+    expect(tracks(frame)).toEqual([0, 0])
+    expect(frame.hasAttribute('data-mobile-sidebar-open')).toBe(true)
+    const mask = frame.querySelector('[class*="mobileMask"]')
+    expect(mask).toBeTruthy()
+    act(() => { mask!.dispatchEvent(new MouseEvent('click', { bubbles: true })) })
+    expect(frame.hasAttribute('data-mobile-sidebar-open')).toBe(false)
+  })
+
+  it('closes the transient drawer after the selected Session changes', () => {
+    const { frame, instance, rerenderFrame } = mountFrame()
+    act(() => { instance.actions.toggleSidebar() })
+    selectedSession.current = 's-next' as SessionId
+    act(() => { rerenderFrame() })
+    expect(frame.hasAttribute('data-mobile-sidebar-open')).toBe(false)
+  })
+
+  it('opens details as a full-frame surface and closes the topmost surface with Escape', () => {
+    const { frame, instance } = mountFrame()
+    act(() => { instance.actions.openDetails() })
+    expect(tracks(frame)).toEqual([0, 0])
+    expect(frame.hasAttribute('data-mobile-details-open')).toBe(true)
+    expect(frame.hasAttribute('data-details-collapsed')).toBe(false)
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })) })
+    expect(frame.hasAttribute('data-mobile-details-open')).toBe(false)
+  })
+
+  it('does not consume Escape while an accessible modal owns it', () => {
+    const { frame, instance } = mountFrame()
+    act(() => { instance.actions.toggleSidebar() })
+    const dialog = document.createElement('div')
+    dialog.setAttribute('role', 'dialog')
+    dialog.setAttribute('aria-modal', 'true')
+    document.body.append(dialog)
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })) })
+    expect(frame.hasAttribute('data-mobile-sidebar-open')).toBe(true)
+    dialog.remove()
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    expect(frame.hasAttribute('data-mobile-sidebar-open')).toBe(true)
   })
 })
 

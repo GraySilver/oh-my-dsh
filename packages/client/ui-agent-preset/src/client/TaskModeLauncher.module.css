@@ -17,10 +17,12 @@
 }
 
 .launch {
+  flex: none;
   gap: 7px;
   padding: 0 11px;
   background: var(--dsw-alias-button-primary-fill);
   color: var(--dsw-alias-label-primary-foreground);
+  white-space: nowrap;
 }
 
 .launch:hover {
@@ -169,6 +171,10 @@
 }
 
 @media (max-width: 640px) {
+  .launchRow {
+    flex: none;
+  }
+
   .modes {
     grid-template-columns: 1fr;
   }

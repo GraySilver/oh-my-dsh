@@ -94,8 +94,10 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export interface SidebarOwnerProps {
   /** True when the sidebar is closed (the column renders the compact control rail). */
   collapsed: boolean
-  /** Rendered column width in px (SIDEBAR_COLLAPSED when collapsed). */
+  /** Rendered desktop column or mobile drawer width in px. */
   width: number
+  /** True when the frame presents the sidebar as a mobile toolbar and drawer. */
+  mobile: boolean
 }
 
 /** Conversation owner share: business state and actions belong to the registrant. */

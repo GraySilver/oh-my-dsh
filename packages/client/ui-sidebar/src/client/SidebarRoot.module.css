@@ -271,6 +271,42 @@
   width: auto;
 }
 
+/* The collapsed mobile sidebar is the app toolbar. The expanded state keeps
+   the ordinary vertical sidebar content and AppFrame positions it as a drawer. */
+.mobile.collapsed {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 56px;
+  padding: 10px 12px;
+}
+
+.mobile.collapsed .logoRow {
+  width: 36px;
+  height: 36px;
+  margin: 0;
+}
+
+.mobile.collapsed .newSession {
+  margin: 0 0 0 auto;
+}
+
+.mobile.collapsed .regionArea,
+.mobile.collapsed .footerActions {
+  display: none;
+}
+
+.mobile.collapsed .footArea,
+.mobile.collapsed .settingsArea {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wide,
   .fading > *,

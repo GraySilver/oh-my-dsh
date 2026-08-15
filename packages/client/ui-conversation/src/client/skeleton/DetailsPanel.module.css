@@ -92,3 +92,19 @@
 .code[data-error] {
   color: var(--dsw-alias-state-error-primary);
 }
+
+@media (max-width: 640px) {
+  .root {
+    border-left: none;
+  }
+
+  .header {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .body {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}

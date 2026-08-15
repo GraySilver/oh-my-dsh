@@ -44,6 +44,7 @@ const SCROLLBAR_LINGER_MS = 2000
 export function SidebarRoot({
   collapsed,
   width,
+  mobile,
   startSession,
   toggleSidebar,
   t,
@@ -88,6 +89,10 @@ export function SidebarRoot({
     window.clearTimeout(lingerTimer.current)
     lingerTimer.current = undefined
   }
+  const beginSession = (): void => {
+    startSession()
+    if (mobile && !collapsed) toggleSidebar()
+  }
   // Leaving is decided by the column's BOX, not by DOM containment, and only
   // while the bars are drawn. ui-settings renders its full-viewport panel as a
   // fixed-position DESCENDANT of this column, so a pointer moved onto that
@@ -118,8 +123,9 @@ export function SidebarRoot({
       ref={column}
       className={clsx(
         css.root, !wide && css.collapsed, !wide && everWide.current && css.railIn,
-        collapsed && wide && css.fading, !pointerInside && css.quietBars,
+        collapsed && wide && css.fading, !pointerInside && css.quietBars, mobile && css.mobile,
       )}
+      data-mobile-toolbar={mobile && !wide ? '' : undefined}
       style={wide ? { width: collapsed ? lastWideWidth.current : width } : undefined}
       onPointerEnter={() => {
         cancelLinger()
@@ -135,7 +141,7 @@ export function SidebarRoot({
             type="button"
             className={clsx(css.brand, css.wide)}
             aria-label={t('session.new.label')}
-            onClick={() => { startSession() }}
+            onClick={beginSession}
           >
             <BrandWordmark />
           </button>
@@ -162,7 +168,7 @@ export function SidebarRoot({
           type="button"
           className={css.newSession}
           aria-label={t('session.new.label')}
-          onClick={() => { startSession() }}
+          onClick={beginSession}
         >
           <IconNewChatOutline16 size={wide ? 14 : 18} />
           {wide && <span className={clsx(css.newSessionLabel, css.wide)}>{t('session.new')}</span>}

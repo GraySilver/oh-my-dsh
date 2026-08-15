@@ -126,3 +126,25 @@
   color: var(--dsw-alias-label-caption);
   white-space: normal;
 }
+
+@media (max-width: 640px) {
+  .productBar {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .seat {
+    justify-content: flex-end;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .productBar {
+    flex-wrap: wrap;
+  }
+
+  .productBar > :last-child {
+    margin-left: auto;
+  }
+}

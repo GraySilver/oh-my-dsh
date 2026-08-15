@@ -673,3 +673,49 @@ select.input {
   font-size: 13px;
   overflow-wrap: anywhere;
 }
+
+@media (max-width: 640px) {
+  .rowHead,
+  .modelListHead {
+    flex-wrap: wrap;
+  }
+
+  .rowIdentity {
+    flex: 1 1 160px;
+    flex-wrap: wrap;
+  }
+
+  .rowActions {
+    flex: 1 0 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+
+  .editor,
+  .addCard,
+  .setupCard {
+    padding: 12px;
+  }
+
+  .editorHeader,
+  .editorActions {
+    flex-wrap: wrap;
+  }
+
+  .addButton {
+    min-width: 100%;
+  }
+
+  .modelRow {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .modelRow > :nth-child(2) {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  .modelAdvanced {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

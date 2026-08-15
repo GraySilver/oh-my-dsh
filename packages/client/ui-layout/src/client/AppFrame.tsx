@@ -17,6 +17,13 @@ import { computeColumns, SIDEBAR_AUTO_COLLAPSE, SIDEBAR_DEFAULT } from './column
 import type { createLayoutStore } from './stores.ts'
 import css from './AppFrame.module.css'
 
+/** Maximum frame width that uses the mobile toolbar and overlay panels. */
+const MOBILE_SHELL_MAX = 640
+/** Maximum mobile navigation drawer width. */
+const MOBILE_DRAWER_MAX = 320
+/** Visible page strip beside an open mobile navigation drawer. */
+const MOBILE_DRAWER_CLEARANCE = 48
+
 /** Full composed props: runtime share + child-slot render share + store share. */
 export type AppFrameProps =
   & PropsRuntime<'root'>
@@ -91,6 +98,7 @@ export function AppFrame({
   renderSlot,
 }: AppFrameProps) {
   const panels = useStore(s => s)
+  const currentSession = useSessions(s => s.current)
   const detailsSession = useSessions((s) => {
     const current = s.current
     return current !== undefined && s.byId[current]?.blank === false ? current : undefined
@@ -135,13 +143,41 @@ export function AppFrame({
   // absorbs the squeeze.
   const narrow = viewport < SIDEBAR_AUTO_COLLAPSE
   useEffect(() => { actions.setNarrow(narrow) }, [actions, narrow])
+  const mobile = viewport <= MOBILE_SHELL_MAX
   const sidebarCollapsed = narrow ? !panels.narrowExpanded : panels.sidebar === 0
   const sidebarPreference = sidebarCollapsed
     ? 0
     : panels.sidebar === 0 ? SIDEBAR_DEFAULT : panels.sidebar
   const cols = computeColumns(viewport, sidebarPreference, detailsSession === undefined ? 0 : panels.details)
+  const mobileDrawerWidth = Math.min(MOBILE_DRAWER_MAX, Math.max(0, viewport - MOBILE_DRAWER_CLEARANCE))
+  const sidebarWidth = mobile ? mobileDrawerWidth : cols.sidebar
+  const mobileSidebarOpen = mobile && !sidebarCollapsed
+  const mobileDetailsOpen = mobile && detailsSession !== undefined && panels.details > 0
   const colsRef = useRef(cols)
   colsRef.current = cols
+
+  // Mobile navigation is transient: selecting another Session lands the user
+  // back on the full-width conversation rather than leaving the drawer over it.
+  const previousSession = useRef(currentSession)
+  useLayoutEffect(() => {
+    const changed = previousSession.current !== currentSession
+    previousSession.current = currentSession
+    if (changed && mobileSidebarOpen) actions.toggleSidebar()
+  }, [actions, currentSession, mobileSidebarOpen])
+
+  // Escape closes only the topmost frame-owned mobile surface. A modal owns
+  // its own Escape lifecycle and must not also dismiss the navigation behind it.
+  useEffect(() => {
+    if (!mobileDetailsOpen && !mobileSidebarOpen) return
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      if (document.querySelector('[role="dialog"][aria-modal="true"]') !== null) return
+      if (mobileDetailsOpen) actions.closeDetails()
+      else actions.toggleSidebar()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('keydown', onKeyDown) }
+  }, [actions, mobileDetailsOpen, mobileSidebarOpen])
 
   // The drag base is the rendered width captured at drag start (grabbing a
   // concession-clamped panel must not jump back to the stored preference);
@@ -165,9 +201,16 @@ export function AppFrame({
     <div
       ref={frameRef}
       className={css.frame}
-      style={{ gridTemplateColumns: `${cols.sidebar}px minmax(0, 1fr) ${cols.details}px` }}
+      style={{
+        gridTemplateColumns: mobile
+          ? '0px minmax(0, 1fr) 0px'
+          : `${cols.sidebar}px minmax(0, 1fr) ${cols.details}px`,
+      }}
+      data-mobile={mobile || undefined}
       data-sidebar-collapsed={sidebarCollapsed || undefined}
-      data-details-collapsed={cols.details === 0 || undefined}
+      data-mobile-sidebar-open={mobileSidebarOpen || undefined}
+      data-mobile-details-open={mobileDetailsOpen || undefined}
+      data-details-collapsed={(mobile ? !mobileDetailsOpen : cols.details === 0) || undefined}
       data-dragging={dragging || undefined}
     >
       <div className={css.sidebarCol}>
@@ -178,9 +221,13 @@ export function AppFrame({
             renders the rail UI too). */}
         {renderSlot('sidebar', {
           collapsed: sidebarCollapsed,
-          width: cols.sidebar,
+          width: sidebarWidth,
+          mobile,
         })}
       </div>
+      {mobileSidebarOpen && (
+        <div className={css.mobileMask} aria-hidden="true" onClick={() => { actions.toggleSidebar() }} />
+      )}
       <>
         {/* Both column occupants stay at fixed tree positions from first
             paint — no loading gate: a bare status line reads worse than
@@ -194,8 +241,8 @@ export function AppFrame({
         {renderSlot('shell.overlay', {})}
       </div>
       {/* The collapsed rail is fixed-width: no resize handle while closed. */}
-      {!sidebarCollapsed && <DragHandle side="sidebar" left={cols.sidebar} onStart={onSidebarStart} onDrag={onSidebarDrag} onEnd={onDragEnd} />}
-      {cols.details > 0 && <DragHandle side="details" left={viewport - cols.details} onStart={onDetailsStart} onDrag={onDetailsDrag} onEnd={onDragEnd} />}
+      {!mobile && !sidebarCollapsed && <DragHandle side="sidebar" left={cols.sidebar} onStart={onSidebarStart} onDrag={onSidebarDrag} onEnd={onDragEnd} />}
+      {!mobile && cols.details > 0 && <DragHandle side="details" left={viewport - cols.details} onStart={onDetailsStart} onDrag={onDetailsDrag} onEnd={onDragEnd} />}
     </div>
   )
 }

@@ -21,7 +21,7 @@ afterEach(() => {
 // props share; stub them as never-called functions.
 const neverHook = (() => { throw new Error('shell must not read global hooks') }) as never
 
-function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; width?: number } = {}) {
+function mountShell({ collapsed = false, width = 300, mobile = false }: { collapsed?: boolean; width?: number; mobile?: boolean } = {}) {
   const startSession = vi.fn()
   const toggleSidebar = vi.fn()
   let regionOwner: SidebarSectionOwnerProps | undefined
@@ -30,7 +30,7 @@ function mountShell({ collapsed = false, width = 300 }: { collapsed?: boolean; w
   let current = { collapsed, width }
   const root = () => (
     <SidebarRoot
-      collapsed={current.collapsed} width={current.width}
+      collapsed={current.collapsed} width={current.width} mobile={mobile}
       useSessions={neverHook} useWorkspaces={neverHook}
       startSession={startSession} toggleSidebar={toggleSidebar} t={t}
       renderSlot={((
@@ -115,5 +115,19 @@ describe('SidebarRoot shell', () => {
     const b = mountShell({ collapsed: true })
     expect(b.regionOwner().wide).toBe(false)
     expect(screen.getByRole('button', { name: 'Open sidebar' })).toBeTruthy()
+  })
+
+  it('starts a Session and dismisses an expanded mobile drawer', () => {
+    const b = mountShell({ mobile: true })
+    fireEvent.click(screen.getAllByRole('button', { name: 'New session' })[0]!)
+    expect(b.startSession).toHaveBeenCalledOnce()
+    expect(b.toggleSidebar).toHaveBeenCalledOnce()
+  })
+
+  it('keeps the mobile toolbar open when starting from its collapsed state', () => {
+    const b = mountShell({ mobile: true, collapsed: true })
+    fireEvent.click(screen.getByRole('button', { name: 'New session' }))
+    expect(b.startSession).toHaveBeenCalledOnce()
+    expect(b.toggleSidebar).not.toHaveBeenCalled()
   })
 })

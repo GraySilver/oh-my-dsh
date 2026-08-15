@@ -474,3 +474,43 @@
   text-decoration: line-through;
   opacity: 0.7;
 }
+
+@media (max-width: 640px) {
+  .card {
+    gap: 8px;
+    border-radius: 18px;
+  }
+
+  /* Narrow cards use two deliberate tool rows. Each group may wrap its own
+     plugin-provided seats, but the groups can no longer overlap each other. */
+  .row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 4px;
+    padding: 2px 8px 8px;
+  }
+
+  .tools,
+  .trailing {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .tools {
+    gap: 10px;
+  }
+
+  .modes {
+    gap: 6px;
+  }
+
+  .trailing {
+    justify-content: flex-end;
+    gap: 8px;
+    row-gap: 4px;
+  }
+
+  .select {
+    max-width: min(180px, calc(100vw - 112px));
+  }
+}

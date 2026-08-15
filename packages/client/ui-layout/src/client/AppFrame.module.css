@@ -23,6 +23,7 @@
 }
 
 .sidebarCol {
+  grid-column: 1;
   min-width: 0;
   overflow: hidden;
   background: var(--dsw-specific-sidebar-fill);
@@ -30,6 +31,7 @@
 }
 
 .centerCol {
+  grid-column: 2;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -37,6 +39,7 @@
 }
 
 .detailsCol {
+  grid-column: 3;
   min-width: 0;
   overflow: hidden;
   border-left: 1px solid var(--dsw-alias-border-l2);
@@ -116,4 +119,73 @@
 
 .overlayLayer > * {
   pointer-events: auto;
+}
+
+/* Mobile keeps the same three slot occupants mounted, but the side columns
+   leave the grid: navigation becomes a toolbar/drawer and details becomes a
+   full-screen surface. Desktop tracks and drag behavior remain untouched. */
+.frame[data-mobile] .centerCol {
+  box-sizing: border-box;
+  padding-top: 56px;
+}
+
+.frame[data-mobile] .sidebarCol {
+  position: absolute;
+  z-index: 30;
+  box-sizing: border-box;
+  border-right: none;
+  overflow: hidden;
+}
+
+.frame[data-mobile][data-sidebar-collapsed] .sidebarCol {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 56px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1);
+}
+
+.frame[data-mobile][data-mobile-sidebar-open] .sidebarCol {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  width: min(320px, calc(100% - 48px));
+  border-right: 1px solid var(--dsw-alias-border-l1);
+  box-shadow: var(--dsw-shadow-lv3);
+}
+
+.mobileMask {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: var(--dsw-alias-bg-mask-1);
+  backdrop-filter: var(--dsw-mask-blur);
+}
+
+.frame[data-mobile] .detailsCol {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  border-left: none;
+  background: var(--dsw-alias-bg-base);
+  transform: translateX(100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform var(--ds-transition-duration-slow) var(--ds-ease-in-out),
+    visibility 0s linear var(--ds-transition-duration-slow);
+}
+
+.frame[data-mobile][data-mobile-details-open] .detailsCol {
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame[data-mobile] .detailsCol {
+    transition: none;
+  }
 }

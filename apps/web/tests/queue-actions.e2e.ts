@@ -34,6 +34,22 @@ const EDITED = 'Edited queue item'
 const TAIL = 'Queue item preserved after stop'
 const WAKE = 'Wake the preserved queue'
 
+/**
+ * Wait until the frame's ResizeObserver-driven mobile projection and its
+ * desktop-track transition both reach the new viewport geometry.
+ * @param page - page whose viewport was changed to the mobile boundary.
+ */
+async function settleMobileFrame(page: Page): Promise<void> {
+  await expect.poll(
+    () => page.locator('[class*="frame"]').getAttribute('data-mobile'),
+    { timeout: 10_000 },
+  ).toBe('true')
+  await expect.poll(async () => {
+    const box = await page.locator('[class*="centerCol"]').boundingBox()
+    return box === null ? null : [Math.round(box.x), Math.round(box.width)]
+  }, { timeout: 10_000 }).toEqual([0, 640])
+}
+
 /** Durable turn-end classifications observed by the scenario. */
 function turnEndReasons(events: readonly SessionEvent[]): string[] {
   return events.flatMap(event => event.type === 'turn/end' ? [event.data.reason.kind] : [])
@@ -112,6 +128,7 @@ describe('web e2e: queue row actions', () => {
     ).toBe(2)
 
     await page.setViewportSize({ width: 640, height: 1000 })
+    await settleMobileFrame(page)
     const queueBox = await page.locator('[data-queue-dock]').boundingBox()
     const composerBox = await page.locator('[data-composer-card]').boundingBox()
     expect(queueBox).not.toBeNull()
@@ -244,6 +261,7 @@ describe('web e2e: queue row actions', () => {
     }
     await expectAlignedContextPanels()
     await page.setViewportSize({ width: 640, height: 1000 })
+    await settleMobileFrame(page)
     await expectAlignedContextPanels()
     await page.setViewportSize({ width: 1680, height: 1000 })
 
