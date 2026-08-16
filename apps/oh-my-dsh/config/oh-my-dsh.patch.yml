@@ -9,6 +9,9 @@
   name: '@deepseek-ai/dsh-client-ui-agent-preset'
   disabled: true
 
+- id: ui-agent-preset
+  disabled: true
+
 # Replace the upstream connection row with a product wrapper. Both its Host
 # and browser halves reuse the upstream implementation; the wrapper widens the
 # explicitly trusted LAN origins to the same product capability as localhost.
@@ -30,7 +33,7 @@
       name: '@graysilver/oh-my-dsh-models'
 
     - id: oh-my-dsh-task-modes
-      name: '@graysilver/oh-my-dsh-task-modes'
+      name: '@graysilver/oh-my-dsh-task-modes-plugin'
 
 # Privacy is a product default, not a best-effort runtime flag.
 - id: session-telemetry-otel

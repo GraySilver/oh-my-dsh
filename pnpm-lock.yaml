@@ -376,6 +376,9 @@ importers:
       '@graysilver/oh-my-dsh-task-modes':
         specifier: workspace:^
         version: link:../../packages/client/ui-agent-preset
+      '@graysilver/oh-my-dsh-task-modes-plugin':
+        specifier: workspace:^
+        version: link:../../packages/client/ui-task-modes
       js-yaml:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1494,6 +1497,9 @@ importers:
       '@graysilver/oh-my-dsh-task-modes':
         specifier: workspace:^
         version: link:../../client/ui-agent-preset
+      '@graysilver/oh-my-dsh-task-modes-plugin':
+        specifier: workspace:^
+        version: link:../../client/ui-task-modes
       commander:
         specifier: ^15.0.0
         version: 15.0.0
@@ -2827,6 +2833,52 @@ importers:
       '@types/react':
         specifier: ~18.3.1
         version: 18.3.31
+
+  packages/client/ui-task-modes:
+    dependencies:
+      '@deepseek-ai/dsh-agent':
+        specifier: workspace:^
+        version: link:../../core/agent
+      '@deepseek-ai/dsh-api-remotes':
+        specifier: workspace:^
+        version: link:../../api/remotes
+      '@deepseek-ai/dsh-client-connection':
+        specifier: workspace:^
+        version: link:../connection
+      '@deepseek-ai/dsh-client-locale':
+        specifier: workspace:^
+        version: link:../locale
+      '@deepseek-ai/dsh-client-runtime':
+        specifier: workspace:^
+        version: link:../runtime
+      '@deepseek-ai/dsh-client-ui-conversation':
+        specifier: workspace:^
+        version: link:../ui-conversation
+      '@deepseek-ai/dsh-client-ui-primitives':
+        specifier: workspace:^
+        version: link:../ui-primitives
+      '@deepseek-ai/dsh-commands':
+        specifier: workspace:^
+        version: link:../../interaction/commands
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:^
+        version: link:../../core/session
+      '@deepseek-ai/dsh-subagent':
+        specifier: workspace:^
+        version: link:../../subagent/subagent
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:^
+        version: link:../../../vendor/cordis
+      '@types/react':
+        specifier: ~18.3.1
+        version: 18.3.31
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
 
   packages/client/ui-theme:
     dependencies:

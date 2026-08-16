@@ -3090,6 +3090,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-workspace` — requires `storageDomain` · `sessionPersistence` ([`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts))
 - `@graysilver/oh-my-dsh-models` ([`packages/client/ui-settings-models/src/index.ts`](../packages/client/ui-settings-models/src/index.ts))
 - `@graysilver/oh-my-dsh-task-modes` ([`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts))
+- `@graysilver/oh-my-dsh-task-modes-plugin` ([`packages/client/ui-task-modes/src/index.ts`](../packages/client/ui-task-modes/src/index.ts))
 
 ## Seam packages (not directly loadable)
 

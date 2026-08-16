@@ -708,6 +708,22 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 来源：[`packages/subagent/subagent/src/descriptor.ts:37`](../packages/subagent/subagent/src/descriptor.ts)
 
+### `task-mode/*`
+
+<a id="task-modeselected--log-only"></a>
+
+#### `task-mode/selected` — log-only
+
+```ts persistence-catalog
+/**
+ * System-prompt strategy selected for later requests. The last value wins;
+ * no event means normal mode.
+ */
+'task-mode/selected': { mode: TaskMode }
+```
+
+来源：[`packages/client/ui-task-modes/src/types.ts:12`](../packages/client/ui-task-modes/src/types.ts)
+
 ### `todo/*`
 
 <a id="todowrite--log-only"></a>

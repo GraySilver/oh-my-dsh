@@ -63,6 +63,7 @@
     "@deepseek-ai/dsh-llm": "0.1.0-rc.6",
     "@graysilver/oh-my-dsh-models": "workspace:^",
     "@graysilver/oh-my-dsh-task-modes": "workspace:^",
+    "@graysilver/oh-my-dsh-task-modes-plugin": "workspace:^",
     "js-yaml": "^4.2.0"
   },
   "devDependencies": {
