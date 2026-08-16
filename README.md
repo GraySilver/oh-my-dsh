@@ -68,7 +68,7 @@ origin    git@github.com:GraySilver/oh-my-dsh.git
 upstream  https://github.com/deepseek-ai/deepseek-harness.git
 ```
 
-A scheduled workflow merges `upstream/master` into one reviewable draft PR, records the exact upstream commit, and aligns the wrapper with the latest official `@deepseek-ai/dsh` npm version. It never publishes. Product releases use the independent `oh-my-dsh-v*` tag family, build three `@graysilver` tarballs, verify them in a clean consumer, and publish those exact bytes only after the protected npm environment approves them.
+A scheduled workflow merges `upstream/master` into one reviewable draft PR, records the exact upstream commit, and aligns the wrapper with the latest official `@deepseek-ai/dsh` npm version. It never publishes. Product releases use the independent `oh-my-dsh-v*` tag family, build four `@graysilver` tarballs, verify them in a clean consumer, and publish those exact bytes only after the protected npm environment approves them.
 
 This split is deliberate: an upstream commit can exist before a corresponding official npm artifact. The source merge proves compatibility; the pinned npm version identifies the engine users actually run.
 

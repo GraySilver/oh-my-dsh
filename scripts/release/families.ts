@@ -244,13 +244,14 @@ class DshFamily extends ReleaseFamily {
   }
 }
 
-/** The product wrapper and its two browser plugins: one independently releasable product. */
+/** The product wrapper and its browser plugins: one independently releasable product. */
 class OhMyDshFamily extends ReleaseFamily {
   readonly id = 'oh-my-dsh'
   readonly patterns = [
     'apps/oh-my-dsh/package.json',
     'packages/client/ui-agent-preset/package.json',
     'packages/client/ui-settings-models/package.json',
+    'packages/client/ui-task-modes/package.json',
   ] as const
   readonly tagPrefix = 'oh-my-dsh-v'
 

@@ -68,7 +68,7 @@ origin    git@github.com:GraySilver/oh-my-dsh.git
 upstream  https://github.com/deepseek-ai/deepseek-harness.git
 ```
 
-定时工作流会把 `upstream/master` 合并到一条可审阅的 Draft PR，记录准确的上游提交，并让包装器对齐最新的官方 `@deepseek-ai/dsh` npm 版本；同步流程绝不发布。产品发布使用独立的 `oh-my-dsh-v*` 标签族，构建三个 `@graysilver` tarball，在全新消费者目录里安装验证，最后经过受保护 npm 环境审批后发布完全相同的产物。
+定时工作流会把 `upstream/master` 合并到一条可审阅的 Draft PR，记录准确的上游提交，并让包装器对齐最新的官方 `@deepseek-ai/dsh` npm 版本；同步流程绝不发布。产品发布使用独立的 `oh-my-dsh-v*` 标签族，构建四个 `@graysilver` tarball，在全新消费者目录里安装验证，最后经过受保护 npm 环境审批后发布完全相同的产物。
 
 这项拆分很重要：上游提交可能早于对应的官方 npm 包。源码合并负责证明兼容性；精确固定的 npm 版本则说明用户实际运行的是哪一版引擎。
 

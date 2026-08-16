@@ -4,7 +4,7 @@
  * ([rationale](../../.agents/notes/implemented/process/2026-08-10-npm-release-sequences.md)).
  *
  * The dsh family shares one version across its members and the workspace root;
- * the Oh My DSH product family shares its own version across three members:
+ * the Oh My DSH product family shares its own version across four members:
  * `major`, `minor`, `patch`, or an explicit `x.y.z` (including a prerelease such
  * as `0.0.1-rc.1`). The vendored family has one version line per package, but
  * every release advances and publishes the complete family so the next release
