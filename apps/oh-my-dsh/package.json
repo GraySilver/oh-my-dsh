@@ -1,7 +1,7 @@
 {
   "name": "@graysilver/oh-my-dsh",
   "description": "Oh My DSH: an opinionated, Web-only DeepSeek Harness experience",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },

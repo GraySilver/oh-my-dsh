@@ -1,7 +1,7 @@
 {
   "name": "@graysilver/oh-my-dsh-task-modes",
   "description": "Oh My DSH task modes, current-directory launch, and agent-preset settings",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },

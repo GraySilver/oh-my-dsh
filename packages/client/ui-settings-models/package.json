@@ -1,7 +1,7 @@
 {
   "name": "@graysilver/oh-my-dsh-models",
   "description": "Oh My DSH first-run model connection and model settings",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },

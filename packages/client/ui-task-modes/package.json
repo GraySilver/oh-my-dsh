@@ -1,7 +1,7 @@
 {
   "name": "@graysilver/oh-my-dsh-task-modes-plugin",
   "description": "Independent task-mode plugin for Oh My DSH",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
