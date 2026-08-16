@@ -32,9 +32,6 @@
     - id: oh-my-dsh-models
       name: '@graysilver/oh-my-dsh-models'
 
-    - id: oh-my-dsh-task-modes
-      name: '@graysilver/oh-my-dsh-task-modes-plugin'
-
 # Privacy is a product default, not a best-effort runtime flag.
 - id: session-telemetry-otel
   disabled: true

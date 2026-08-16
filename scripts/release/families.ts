@@ -251,7 +251,6 @@ class OhMyDshFamily extends ReleaseFamily {
     'apps/oh-my-dsh/package.json',
     'packages/client/ui-agent-preset/package.json',
     'packages/client/ui-settings-models/package.json',
-    'packages/client/ui-task-modes/package.json',
   ] as const
   readonly tagPrefix = 'oh-my-dsh-v'
 
